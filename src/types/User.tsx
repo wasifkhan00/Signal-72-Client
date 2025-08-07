@@ -11,4 +11,5 @@ export interface UserProps {
   onClick?: (e: React.MouseEvent<any>) => void;
   chatId?: string;
   userId?: string;
+  rsaPublicKey?: string;
 }

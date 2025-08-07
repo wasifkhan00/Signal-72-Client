@@ -1,62 +1,53 @@
+/* Reset and box model */
 * {
   padding: 0;
   margin: 0;
   box-sizing: border-box;
 }
+
+/* Debugging helper class (optional) */
 .fucker {
   margin: 2rem;
 }
 
+/* Main dropdown container */
 .mainDropDownContainer {
   top: 4rem;
   position: fixed;
-  z-index: 1 !important;
-  background-color: rgb(227, 42, 42);
+  z-index: 10;
 }
+
+/* Dropdown container styling */
 .dropdowncontainer {
-  width: 125px;
-  z-index: 1 !important;
+  width: 160px;
   position: fixed;
   right: 1rem;
   background-color: rgb(246, 246, 246);
   display: flex;
   flex-direction: column;
-  border: 1px solid black;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
 }
+
+/* Common dropdown item */
 .common {
-  padding: 0.5rem 0;
-  width: 130px;
-  font-size: 11px;
-  text-align: center;
+  padding: 0.75rem 1rem;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.25s, color 0.25s;
 }
 
 .common:hover {
   background: rgb(66, 66, 66);
-  width: inherit;
-
   color: white !important;
 }
 
-.containerOfResponses {
-  background: rgb(255 255 255 / 97%);
-  box-shadow: 0px 0px 2px rgb(196, 192, 192);
-  width: 28vw;
-  height: 20rem;
-  position: fixed;
-  overflow-y: auto;
-  top: 1.4rem;
-  margin: 6rem 35rem;
-}
-
-.containerOfResponses::-webkit-scrollbar {
-  width: 12px;
-}
-
-.containerOfResponses::-webkit-scrollbar-track {
-  background: #8d8d8c;
-}
-
-.containerOfResponses::-webkit-scrollbar-thumb {
-  background-color: #e5e5e5;
+hr {
   border: none;
+  height: 1px;
+  background-color: #ccc;
+  margin: 0;
 }

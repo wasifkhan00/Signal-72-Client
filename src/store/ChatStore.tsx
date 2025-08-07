@@ -6,12 +6,16 @@ interface GroupMember {
   isAdmin: boolean;
   addedBy: string;
 }
+
 export interface GroupChat {
   type: "group";
   createdBy: string;
   chatId: string;
   groupNames: string;
   members: GroupMember[];
+  encryptedAESKeys: {
+    [email: string]: string;
+  };
 }
 
 export interface PrivateChat {
@@ -26,13 +30,24 @@ export interface PrivateChat {
   };
   chatName: string;
   chatId: string;
+  encryptedAESKeys: {
+    [email: string]: string;
+  };
 }
 
 export type Chat = GroupChat | PrivateChat;
 
+interface UserStatus {
+  user: string;
+  status: string;
+}
+
 interface ChatStore {
   typing: boolean;
   setTyping: (val: boolean) => void;
+
+  userOnlineStatus: UserStatus | null;
+  setUserOnlineStatus: (val: UserStatus) => void;
 
   isSeen: boolean;
   setIsSeen: (val: boolean) => void;
@@ -40,7 +55,7 @@ interface ChatStore {
   heIsTyping: string;
   setHeIsTyping: (val: string) => void;
 
-  messages: any[]; // You can later define a proper Message type
+  messages: any[];
   setMessages: (val: any[] | ((prev: any[]) => any[])) => void;
 
   unreadMessages: boolean;
@@ -72,9 +87,6 @@ interface ChatStore {
   userIsAdmin: boolean;
   setUserIsAdmin: (val: boolean) => void;
 
-  // addingGroupMembers: any[];
-  // setAddingGroupMembers: (val: any[]) => void;
-
   showCreateGroupIntf: boolean;
   setShowCreateGroupIntf: (val: boolean) => void;
 
@@ -86,6 +98,12 @@ interface ChatStore {
 
   showLoadingInterface: boolean;
   setShowLoadingInterface: (val: boolean) => void;
+
+  showIncomingCall: boolean;
+  setShowIncomingCall: (val: boolean) => void;
+
+  showOutgoingCall: boolean;
+  setShowOutgoingCall: (val: boolean) => void;
 
   chatIdGenerator: typeof generateChatId;
 
@@ -100,15 +118,14 @@ interface ChatStore {
 }
 
 const useChatStore = create<ChatStore>((set) => ({
-  selectedGroupMemberPayload: [],
-  setSelectedGroupMemberPayload: (val) =>
-    set({ selectedGroupMemberPayload: val }),
-
   typing: false,
   setTyping: (val) => set({ typing: val }),
 
+  userOnlineStatus: null,
+  setUserOnlineStatus: (val) => set({ userOnlineStatus: val }),
+
   isSeen: false,
-  setIsSeen: (val) => set({ typing: val }),
+  setIsSeen: (val) => set({ isSeen: val }),
 
   heIsTyping: "",
   setHeIsTyping: (val) => set({ heIsTyping: val }),
@@ -149,11 +166,14 @@ const useChatStore = create<ChatStore>((set) => ({
   userIsAdmin: false,
   setUserIsAdmin: (val) => set({ userIsAdmin: val }),
 
-  // addingGroupMembers: [],
-  // setAddingGroupMembers: (val) => set({ addingGroupMembers: val }),
-
   showCreateGroupIntf: false,
   setShowCreateGroupIntf: (val) => set({ showCreateGroupIntf: val }),
+
+  showIncomingCall: false,
+  setShowIncomingCall: (val) => set({ showIncomingCall: val }),
+
+  showOutgoingCall: false,
+  setShowOutgoingCall: (val) => set({ showOutgoingCall: val }),
 
   lastMessageInfo: {},
   setLastMessageInfo: (val) => set({ lastMessageInfo: val }),
@@ -168,6 +188,10 @@ const useChatStore = create<ChatStore>((set) => ({
 
   selectedChat: null,
   setSelectedChat: (val) => set({ selectedChat: val }),
+
+  selectedGroupMemberPayload: [],
+  setSelectedGroupMemberPayload: (val) =>
+    set({ selectedGroupMemberPayload: val }),
 
   isModePrivateChat: false,
   setIsModePrivateChat: (value: boolean) => set({ isModePrivateChat: value }),

@@ -1,0 +1,63 @@
+/* Signup Component Css Start  */
+.form_inputs_Container {
+  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+  display: flex;
+  /*   border: 2px solid #2287bd; */
+  /*   box-shadow: 3px 3px 1px #3b92aa; */
+  box-shadow: 1px 1px 7px #0ba997;
+  background: transparent;
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+  width: 38vw;
+  padding: 2rem 0;
+  font-size: 13px;
+}
+
+.form_inputs_Container input {
+  color: white;
+  margin: 0.4rem 0;
+  font-size: 11px;
+  height: 34px;
+  border-bottom: 1px solid rgb(163 163 163) !important;
+  padding: 0 0.6rem;
+  outline: none;
+  background: none;
+  /* border: none; */
+  width: 27vw;
+}
+.form_inputs_Container input:focus {
+  height: 37px;
+  /* border-right: 1px solid rgb(73, 73, 73) !important;
+  border-bottom: 1px solid rgb(73, 73, 73) !important;
+  border-top: 1px solid rgb(73, 73, 73) !important;
+  border-left: 1px solid rgb(73, 73, 73) !important; */
+}
+.form_inputs_Container button {
+  background: transparent;
+  width: 26vw;
+  margin: 1rem;
+  text-align: center;
+  font-size: 11px;
+  text-decoration: none;
+  border: none;
+  border: 1px solid rgb(11 169 151);
+  /* box-shadow: 0px 0px 2rgb(210, 214, 218)22); */
+  box-shadow: 0px 0px 2px rgb(71 147 222);
+  cursor: pointer;
+  padding: 0.7rem 0;
+  color: rgb(255, 255, 255) !important;
+  outline: none;
+  transition: all 0.3s ease-in-out;
+}
+
+.form_inputs_Container button:hover {
+  box-shadow: 0px 0px 4px rgb(11 169 151);
+}
+
+#Have_an_Account {
+  color: #b8adad;
+  font-size: 11px;
+  margin-bottom: 1.4rem;
+}
+/* Signup Component Css End */

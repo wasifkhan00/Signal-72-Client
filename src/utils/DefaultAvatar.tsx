@@ -9,7 +9,7 @@ const DefaultAvatar = ({ name }: { name: string | any }) => {
   return (
     <div
       style={{
-        backgroundColor: dark ? "#4B4B4B" : "#007AFF",
+        backgroundColor: dark ? "#4B4B4B" : "rgb(0, 122, 109)",
         color: "#fff",
         width: "40px",
         height: "40px",

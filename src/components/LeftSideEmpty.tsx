@@ -9,7 +9,9 @@ import useChatStore from "@store/ChatStore";
 import useAppStore from "@store/AppStore";
 import useChatModulesStore from "@store/ChatModulesStore";
 import ChatTypingIcon from "@utils/LeftSideEmptySVG";
-
+import "../styles/components/LeftSideEmpty.css";
+import Image from "next/image";
+import imager from "../assets/images/imagechat.jpg";
 //
 const LeftSideEmpty = () => {
   //   let { dark, emailAddress, setChatList } = useContext(themeContext); // declared already
@@ -27,7 +29,7 @@ const LeftSideEmpty = () => {
     setShowCreateGroupIntf(!showCreateGroupIntf);
     // axios
     //   .post(
-    //     Endpoints.checkGroupAvailability,
+    //     Endpoints.fetchUserChats,
     //     { emailAddress },
     //     { headers: Endpoints.getHeaders() }
     //   )
@@ -66,12 +68,12 @@ const LeftSideEmpty = () => {
 
   const Left_Side_Empty_Container_Style: React.CSSProperties = {
     display: "flex",
-    overflow: "hidden",
     flexDirection: "column",
-    alignItems: "center",
-    marginTop: "15rem",
     justifyContent: "center",
-    fontSize: "7rem",
+    alignItems: "center",
+    height: "100%", // Or 100vh depending on parent
+    textAlign: "center",
+    fontSize: "2rem",
     color: dark ? "#e3e3e3" : "#7c7171",
   };
 
@@ -81,10 +83,15 @@ const LeftSideEmpty = () => {
       style={Left_Side_Empty_Container_Style}
     >
       {showLoadingInterface ? null : (
-        <>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            marginTop: "13rem",
+          }}
+        >
           <div className="left_Side_Svg_Container">
-            {/* <Svg /> */}
-
             <ChatTypingIcon />
           </div>
           <h2>Welcome To Snap-Text!</h2>
@@ -92,10 +99,7 @@ const LeftSideEmpty = () => {
             Share media, moments, <br />
             memes and love.
           </p>
-          {/* <button className="create_Group_btn" onClick={handleCreateGroup}>
-            Create Group
-          </button> */}
-        </>
+        </div>
       )}
     </div>
   );

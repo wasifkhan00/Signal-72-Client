@@ -1,6 +1,7 @@
 import React from "react";
 import useAppStore from "@store/AppStore";
 import useChatStore from "@store/ChatStore";
+import "../styles/Utils/MessageBox.css";
 
 interface MessagesBoxProps {
   timeStamp: string;

@@ -4,7 +4,8 @@ import React, { useRef, useEffect } from "react";
 import Link from "next/link";
 import axios from "axios";
 // import Chat from "./Chat";
-import "../app/globals.css";
+import "../styles/components/Login.css";
+import "../styles/media.css";
 import Endpoints from "../endpoint/endpoints";
 import sockets from "../websockets/websockets";
 import { useLoginStore } from "@store/LoginStore";
@@ -12,6 +13,9 @@ import SmallSpinnerLoader from "../utils/SmallSpinnerLoader";
 import { AuthStore } from "@store/AuthStore";
 import { useRouter } from "next/navigation";
 import { useRegisterStore } from "@store/RegisterStore";
+import { verifyToken } from "../lib/VerifyToken";
+import { unlockRSAPrivateKey } from "../encryption/GenerateRSA";
+import { createSessionKeyAndCacheRSAKey } from "../encryption/CreateSessionKeyAndCacheRSAKey";
 
 const Login = () => {
   const router = useRouter();
@@ -27,99 +31,52 @@ const Login = () => {
     setEmail,
     setPassword,
   } = useLoginStore();
-  const { successMessage, setField } = useRegisterStore();
-  const { showChat, setShowChat, setName, setEmailAddress, setToken } =
-    AuthStore();
+  const { successMessage, setSuccessMessage, setHasJustRegistered } =
+    useRegisterStore();
+  const {
+    showChat,
+    setShowChat,
+    setName,
+    setEmailAddress,
+    setToken,
+    setRSAKeyPairs,
+  } = AuthStore();
+  const ranOnceRef = useRef(false);
 
   const accountNoInput = useRef("");
   const passwordInput = useRef("");
   const isContainsNumber = /^(?=.*[0-9]).*$/;
 
   useEffect(() => {
+    if (ranOnceRef.current) return;
+    ranOnceRef.current = true;
+
     const savedToken = localStorage.getItem("token");
-    const savedName = localStorage.getItem("names");
-    const savedAccount = localStorage.getItem("emails");
-    const unverifiedEmail = localStorage.getItem("unverifiedEmail");
+    const savedEmail = localStorage.getItem("emails");
+    const savedNames = localStorage.getItem("names");
 
-    if (savedToken && savedName && savedAccount) {
-      setField("successMessage", true);
+    if (!savedToken || !savedEmail || !savedNames) return;
 
-      if (unverifiedEmail) {
-        setEmailAddress(unverifiedEmail);
-        setField("hasJustRegistered", true);
-        setTimeout(() => {
-          router.push("/register/otp");
-        }, 2000);
-
-        return;
-      }
-
-      setUsersName(savedName);
-      setShowChat(true);
-      router.push("/chat");
-
-      setEmailAddress(savedAccount);
-      setName(savedName);
-      setToken(savedToken);
-
-      if (!sockets.connected) {
-        sockets.connect();
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    sockets.on("loginSuccess", (data) => {
-      if (!data.verifiedEmail) {
-        localStorage.setItem("unverifiedEmail", data.emails);
-        setEmailAddress(data.emails);
-        setField("hasJustRegistered", true);
-        setTimeout(() => {
-          router.push("/register/otp");
-        }, 2000);
-
-        return;
-      }
-      if (data.success && data.verifiedEmail) {
-        setShowWaitForApiResponse(false);
-        setField("successMessage", true);
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("names", data.names);
-        localStorage.setItem("emails", data.emails);
-        setUsersName(data.names);
-
-        setEmailAddress(data.emails);
-        setName(data.names);
-        setToken(data.token);
-        setIncorrectEmailOrPassword(false);
-        setShowChat(true);
-        router.push("/chat");
-
-        if (!sockets.connected) {
-          sockets.connect();
-        }
-
-        setTimeout(() => {
-          setField("successMessage", false);
-          setEmail("");
-          setPassword("");
-          setIncorrectEmailOrPassword(false);
-        }, 2000);
-      } else {
-        setShowWaitForApiResponse(false);
-        setIncorrectEmailOrPassword(true);
-      }
-    });
-
-    sockets.on("loginError", (error) => {
-      setShowWaitForApiResponse(false);
-      setIncorrectEmailOrPassword(true);
+    verifyToken({
+      savedToken,
+      savedEmail,
+      savedNames,
+      setSuccessMessage,
+      setHasJustRegistered,
+      setUsersName,
+      setEmailAddress,
+      setName,
+      setToken,
+      setShowChat,
+      router,
+      sockets,
     });
   }, []);
 
   const handleLogin = (): void => {
     setShowWaitForApiResponse(true);
 
+    // 🔐 Validate input
     if (
       !email ||
       !password ||
@@ -132,81 +89,88 @@ const Login = () => {
     }
 
     const loginData = { emails: email, password };
-    let fallbackTriggered = false;
 
-    const proceedWithLogin = () => {
-      if (fallbackTriggered) return;
+    axios
+      .post(Endpoints.loginUser, loginData, {
+        headers: Endpoints.getHeaders(),
+      })
+      .then(async (res) => {
+        const { success, verifiedEmail, emails, names, token } = res.data;
 
-      console.log("✅ WebSocket connected. Emitting login request...");
-      sockets.emit("loginUser", loginData);
-    };
-
-    const fallbackToAxios = () => {
-      if (fallbackTriggered) return;
-      fallbackTriggered = true;
-
-      console.log("⏳ Socket timeout. Using HTTP login...");
-
-      axios
-        .post(Endpoints.loginUser, loginData, {
-          headers: Endpoints.getHeaders(),
-        })
-        .then((res) => {
-          if (!res.data.verifiedEmail) {
-            localStorage.setItem("unverifiedEmail", res.data.emails);
-            setEmailAddress(res.data.emails);
-            setField("hasJustRegistered", true);
-            setTimeout(() => {
-              router.push("/register/otp");
-            }, 2000);
-
-            return;
-          }
-
-          if (res.data.success && res.data.verifiedEmail) {
-            setShowWaitForApiResponse(false);
-            setField("successMessage", true);
-            localStorage.setItem("token", res.data.token);
-            localStorage.setItem("names", res.data.names);
-            localStorage.setItem("emails", res.data.emails);
-            setUsersName(res.data.names);
-            setEmailAddress(res.data.emails);
-            setName(res.data.names);
-            setToken(res.data.token);
-            setIncorrectEmailOrPassword(false);
-            setShowChat(true);
-            router.push("/chat");
-
-            setTimeout(() => {
-              setField("successMessage", false);
-              setEmail("");
-              setPassword("");
-              setIncorrectEmailOrPassword(false);
-            }, 1500);
-
-            if (!sockets.connected) sockets.connect();
-          } else {
-            setShowWaitForApiResponse(false);
-            setIncorrectEmailOrPassword(true);
-          }
-        })
-        .catch((err) => {
-          console.error("Fallback HTTP login failed:", err.message);
+        if (!success) {
+          setIncorrectEmailOrPassword(true);
           setShowWaitForApiResponse(false);
-        });
-    };
+          return;
+        }
 
-    if (!sockets.connected) {
-      sockets.connect();
-      sockets.once("connect", proceedWithLogin);
+        if (!verifiedEmail) {
+          localStorage.setItem("unverifiedEmail", emails);
+          setEmailAddress(emails);
+          setHasJustRegistered(true);
 
-      // Fallback if not connected within 2.5s
-      setTimeout(() => {
-        if (!sockets.connected) fallbackToAxios();
-      }, 2500);
-    } else {
-      proceedWithLogin();
-    }
+          setTimeout(() => {
+            router.push("/register/otp");
+          }, 2000);
+          return;
+        }
+
+        if (success && verifiedEmail) {
+          localStorage.setItem("token", token);
+          localStorage.setItem("names", names);
+          localStorage.setItem("emails", emails);
+
+          setUsersName(names);
+          setEmailAddress(emails);
+          setName(names);
+          setToken(token);
+
+          // 🛡️ Unlock RSA key using password
+          const unlockRSAKeyPairs = await unlockRSAPrivateKey(password);
+          if (
+            unlockRSAKeyPairs &&
+            res.data.rsaPublicKey === unlockRSAKeyPairs?.publicKeyBase64
+          ) {
+            console.log(unlockRSAKeyPairs);
+            const createSessionKeyAndCacheRSAKeys =
+              await createSessionKeyAndCacheRSAKey(unlockRSAKeyPairs);
+            console.log(createSessionKeyAndCacheRSAKeys);
+            setRSAKeyPairs({
+              rsaPrivateKey: unlockRSAKeyPairs.rsaPrivateKey,
+              rsaPublicKey: unlockRSAKeyPairs.publicKeyBase64,
+            });
+          } else {
+            console.log(
+              "keys couldnt be send because the db and the localforage public keys doesnt match"
+            );
+          }
+
+          setIncorrectEmailOrPassword(false);
+          setShowWaitForApiResponse(false);
+          setSuccessMessage(true);
+          setShowChat(true);
+          router.push("/chat");
+
+          setTimeout(() => {
+            setSuccessMessage(false);
+            setEmail("");
+            setPassword("");
+          }, 1500);
+
+          // 🔌 Connect WebSocket after login
+          if (!sockets.connected) sockets.connect();
+        } else {
+          setSuccessMessage(false);
+
+          setIncorrectEmailOrPassword(true);
+          setShowWaitForApiResponse(false);
+        }
+      })
+      .catch((err) => {
+        console.error("Login failed:", err.message);
+        setSuccessMessage(false);
+        setShowWaitForApiResponse(false);
+        setIncorrectEmailOrPassword(true);
+      });
   };
 
   const handleEnterKey = (e: React.KeyboardEvent<HTMLInputElement>) => {

@@ -5,7 +5,9 @@ import sockets from "../websockets/websockets";
 import { AuthStore } from "@store/AuthStore";
 import useAppStore from "@store/AppStore";
 import useChatStore from "@store/ChatStore";
-
+import "../styles/media.css";
+import "../styles/components/UserExitGroup.css";
+import "../styles/components/CreateGroupInterface.css";
 const UserExitGroup = () => {
   const { emailAddress } = AuthStore();
   const { dark, setUserIsExitingTheGroup } = useAppStore();

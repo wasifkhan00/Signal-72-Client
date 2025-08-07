@@ -2,6 +2,8 @@
 import React, { useEffect, useRef } from "react";
 import axios from "axios";
 import "../app/globals.css";
+import "../styles/media.css";
+import "../styles/components/Login.css";
 import Endpoints from "../endpoint/endpoints";
 import sockets from "../websockets/websockets";
 import { useOtpStore } from "@store/OTPStore"; // update path if needed
@@ -13,7 +15,7 @@ import { useLoginStore } from "@store/LoginStore";
 
 const OtpAuthentication = () => {
   const router = useRouter();
-  const setRegisterField = useRegisterStore((s) => s.setField);
+  const { setHasJustRegistered } = useRegisterStore();
 
   const {
     timeLeft,
@@ -50,19 +52,23 @@ const OtpAuthentication = () => {
     return () => clearInterval(interval);
   }, [timeLeft, setField]);
 
-  const hasSentOTP = useRef(false);
+  // const hasSentOTP = useRef(false);
 
+  const hasSentOTP = useRef(false);
   useEffect(() => {
     if (hasSentOTP.current) return;
     hasSentOTP.current = true;
-
     if (!emailAddress) {
       router.replace("/register");
       return;
     }
 
     const unverifiedEmail = localStorage.getItem("unverifiedEmail");
-    if (unverifiedEmail) {
+
+    if (unverifiedEmail && !localStorage.getItem("otpSentAlready")) {
+      console.log("rendered useffect otp if conditon");
+
+      localStorage.setItem("otpSentAlready", "true");
       axios
         .post(Endpoints.unverifiedEmail, { email: unverifiedEmail })
         .then((response) => {
@@ -71,13 +77,18 @@ const OtpAuthentication = () => {
             setField("OTPSent", true);
             setField("timeLeft", 60);
             setField("canResend", false);
+
+            // Automatically allow resend after 60 seconds
+            setTimeout(() => {
+              localStorage.removeItem("otpSentAlready");
+              setField("canResend", true);
+            }, 60000);
           }
         })
-        .catch((error) => {
-          console.error("Error:", error);
-        });
+        .catch(console.error);
     }
   }, []);
+
   const handleVerifyOTP = () => {
     if (!otp || !/^\d{6}$/.test(otp)) {
       setField("invalidOTP", true);
@@ -92,13 +103,13 @@ const OtpAuthentication = () => {
     axios
       .post(Endpoints.verifyOTP, { email: emailAddress, otp })
       .then((response) => {
-        console.log(response);
         if (response.data.success) {
+          localStorage.removeItem("otpSentAlready");
           localStorage.removeItem("unverifiedEmail");
           localStorage.setItem("token", response.data.token);
           localStorage.setItem("names", response.data.names);
           localStorage.setItem("emails", response.data.emails);
-
+          setField("OTPSent", true);
           setField("OTPVerifiedSuccess", true);
           setField("otpAttempts", 3);
           setField("canResend", false);
@@ -108,7 +119,7 @@ const OtpAuthentication = () => {
           setField("OTPVerifiedSuccess", false);
           setField("showWaitForApiResponse", false);
 
-          setRegisterField("hasJustRegistered", false);
+          setHasJustRegistered(false);
 
           setUsersName(response.data.names);
           setEmailAddress(response.data.emails);

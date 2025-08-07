@@ -15,6 +15,7 @@
     "cloudflare": "^4.4.1",
     "debounce": "^2.2.0",
     "git": "^0.1.5",
+    "localforage": "^1.10.0",
     "lodash.debounce": "^4.0.8",
     "lucide-react": "^0.525.0",
     "next": "15.3.4",
@@ -22,6 +23,7 @@
     "react-dom": "^19.0.0",
     "react-icons": "^4.6.0",
     "socket.io-client": "^4.8.1",
+    "tailwind": "^4.0.0",
     "uuid": "^11.1.0",
     "zustand": "^5.0.6"
   },

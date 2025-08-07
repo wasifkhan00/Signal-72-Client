@@ -1,0 +1,141 @@
+.viewImage span {
+  font-size: 13px;
+  position: fixed;
+  top: 0.2rem;
+  display: none;
+  right: 0.4rem;
+  -o-object-fit: cover;
+  object-fit: cover;
+  cursor: pointer !important;
+  padding-bottom: 0.5rem;
+}
+
+.viewImage button {
+  margin: 4.1px;
+  text-align: center;
+  float: right;
+  padding: 3px 23px !important;
+  border-radius: 30px;
+  font-size: 11px;
+  border: none;
+  cursor: pointer !important;
+  color: white !important;
+  outline: none;
+  background-color: #1fb0f7;
+}
+.rcvImg {
+  position: absolute;
+  left: 29rem;
+  top: 9rem;
+  padding: 25px !important;
+}
+.right_side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #fff;
+  overflow: hidden;
+  position: relative;
+}
+.right_side header {
+  height: 60px;
+  flex-shrink: 0;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.imgContainer {
+  display: flex;
+  margin: 0 0.5rem;
+  margin-right: 1rem;
+  border-radius: 50%;
+  justify-content: center;
+  align-items: center;
+}
+
+.containerHeaderImage {
+  width: 42px;
+}
+.right_side main .right_side {
+  background: transparent !important;
+}
+
+.right_side main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.right_side main::-webkit-scrollbar {
+  width: 6px;
+}
+
+.right_side main::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.right_side main::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background-color: #285e7b;
+  border: none;
+}
+.search_account {
+  cursor: pointer;
+  font-size: 16px;
+  margin-right: 1rem;
+}
+
+.searchAccount_input {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.searchAccount_input input {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  margin: 0.4rem 1rem;
+  font-size: 13px;
+  color: white;
+  height: 20px;
+  border-bottom: 1px solid rgb(224 224 224) !important;
+  padding: 1rem 1.1rem;
+  border-radius: 20px;
+  background: none;
+  border: none;
+  width: 16vw;
+  outline: none;
+}
+
+.imgContainers img {
+  margin-right: 1rem;
+  width: 100%;
+  border-radius: 50%;
+}
+.imgContainer image {
+  margin-right: 1rem;
+  border-radius: 50%;
+}
+
+.imgContainer h3 {
+  font-size: 14px;
+}
+.imgContainer h6 {
+  font-size: 9px;
+}
+.imgContainers h3 {
+  font-size: 15px;
+}
+.imgContainers h6 {
+  font-size: 9px;
+}
+.nameUsersContainer {
+  margin: 0 0.4rem;
+}

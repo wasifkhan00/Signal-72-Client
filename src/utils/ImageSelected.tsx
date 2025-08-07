@@ -3,6 +3,8 @@ import { time_And_Date_Container_ImageSelectedView_Style } from "../styles/Style
 import useAppStore from "@store/AppStore";
 import useChatStore from "@store/ChatStore";
 import TickIcon from "./SingleTick";
+import "../styles/media.css";
+import "../styles/Utils/ImageSelected.css";
 // import { CheckDouble } from "lucide-react"; // or use your own tick icon
 
 interface ImageSelectedProps {

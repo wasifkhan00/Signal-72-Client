@@ -1,6 +1,8 @@
 import React from "react";
 import { user_Left_Container } from "../styles/Styles";
 import useChatModulesStore from "@store/ChatModulesStore";
+import "../Styles/media.css";
+import "../Styles/Utils/AddedInTheGroup.css";
 
 const UserLeft = () => {
   const { showUserLeftGroup } = useChatModulesStore();

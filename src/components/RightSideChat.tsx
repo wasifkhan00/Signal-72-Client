@@ -5,6 +5,8 @@ import profilePicture from "../assets/images/profile.png";
 import AddedInTheGroup from "../utils/AddedInTheGroup";
 import { IoIosSearch } from "react-icons/io";
 import "../styles/chat.css";
+import "../styles/media.css";
+import "../styles/components/RightSideChat.css";
 import ImageSelected from "../utils/ImageSelected";
 import SerndMessage from "./SendMessage";
 import MessagesBox from "../utils/MessagesBox";
@@ -24,6 +26,7 @@ import useAppStore from "@store/AppStore";
 import Image from "next/image";
 import DefaultAvatar from "@utils/DefaultAvatar";
 import RightSideEmpty from "./RightSideEmpty";
+import { handleAudioCall } from "../encryption/AudioCall";
 
 const RightSideChat = () => {
   const messagesArea = useRef<HTMLElement | null>(null);
@@ -72,9 +75,17 @@ const RightSideChat = () => {
     setDiscardMyMedia,
     DiscardMyMedia,
     selectedChat,
+    showIncomingCall,
+    showOutgoingCall,
     chatId,
+    userOnlineStatus,
   } = useChatStore();
   const { emailAddress } = AuthStore();
+
+  // useEffect(() => {
+  //   console.log(userOnlineStatus);
+  // }, [userOnlineStatus]);
+
   const {
     dark,
     setShowDarkAndLightModeDropDown,
@@ -103,7 +114,7 @@ const RightSideChat = () => {
     const WhoAddedTheUser = async () => {
       await axios
         .post(
-          Endpoints.checkGroupAvailability,
+          Endpoints.fetchUserChats,
           { emailAddress },
           { headers: Endpoints.getHeaders() }
         )
@@ -146,42 +157,6 @@ const RightSideChat = () => {
       setViewImage(true);
     }, 50);
   };
-
-  // useEffect(() => {
-  //   const monthNames = [
-  //     "Jan",
-  //     "Feb",
-  //     "March",
-  //     "April",
-  //     "May",
-  //     "June",
-  //     "July",
-  //     "Aug",
-  //     "Sept",
-  //     "Oct",
-  //     "Nov",
-  //     "Dec",
-  //   ];
-
-  //   var d = new Date(Date.now());
-  //   const date = d.getDate();
-  //   var month = monthNames[d.getMonth()];
-  //   const year = d.getFullYear();
-  //   const fullDate = date + " " + month + " " + year;
-
-  //   // Yesterday Calculation
-  //   //   var defaultDate = d - 1000 * 60 * 60 * 24 * 1;
-  //   const yesterdayTime = new Date(Date.now() - 1000 * 60 * 60 * 24);
-  //   const yesterdayDate = yesterdayTime.getDate();
-  //   var yesterdayMonth = monthNames[yesterdayTime.getMonth()];
-  //   const YesterdayYear = d.getFullYear();
-
-  //   const Yesterday =
-  //     yesterdayDate + " " + yesterdayMonth + " " + YesterdayYear;
-
-  //   setToday(fullDate);
-  //   setYesterday(Yesterday);
-  // }, []);
 
   const mouserEnterHover = () => setEditGroupName(true);
 
@@ -279,7 +254,6 @@ const RightSideChat = () => {
     background: dark
       ? "linear-gradient(145deg, #1a1a1a, #2c2c2c)"
       : "linear-gradient(145deg, #f4f4f4, #e8e8e8)",
-
     // transform: "translate(-50%, -50%)",
     display: "flex",
     flexDirection: "column",
@@ -292,9 +266,8 @@ const RightSideChat = () => {
     boxShadow: "0px 4px 20px rgba(0,0,0,0.2)",
     maxWidth: "90vw",
     maxHeight: "90vh",
-    minWidth: showWait ? "500px" : "auto", // 🔥 this ensures "wait" box has space
+    minWidth: showWait ? "500px" : "auto",
     minHeight: showWait ? "450px" : "auto",
-
     overflow: "auto",
     zIndex: 9999,
   };
@@ -330,7 +303,6 @@ const RightSideChat = () => {
     <>
       {viewImageContainer ? (
         <div className="viewImage" style={viewImageStyle}>
-          {/* <span id=""> */}
           <div style={dummyStyleFOrDiv}>
             <SmallSpinnerLoader makeMarginAuto={true} />
             <p style={{ margin: "1rem -2rem", fontSize: "11px" }}>
@@ -404,17 +376,26 @@ const RightSideChat = () => {
                     />
                   ) : null}
                 </h3>
+                <h6 style={{ color: "gray" }}>
+                  {selectedChat.type === "group" ? (
+                    <>
+                      You
+                      {selectedChat.members?.length > 0 &&
+                        ", " +
+                          selectedChat.members
+                            .map((m: any) => m.userName)
+                            .join(", ")}
+                    </>
+                  ) : (
+                    (() => {
+                      const otherUserEmail =
+                        selectedChat.chatInitiatedTo.email === emailAddress
+                          ? selectedChat.chatInitiatedFrom.email
+                          : selectedChat.chatInitiatedTo.email;
 
-                <h6 style={{ color: fontColor }}>
-                  {selectedChat.type === "group" ? "You" : null}
-                  {selectedChat.type === "group" &&
-                  selectedChat?.members &&
-                  selectedChat.members.length > 0
-                    ? ", " +
-                      selectedChat.members
-                        .map((member: any) => member.userName)
-                        .join(", ")
-                    : ""}
+                      return userOnlineStatus?.status;
+                    })()
+                  )}
                 </h6>
               </div>
             </div>
@@ -431,8 +412,19 @@ const RightSideChat = () => {
                   </span>
                 ) : null}
                 <span>
-                  <MdVideoCall className="search_account" />
-                  <MdCall className="search_account" />
+                  <MdVideoCall
+                    className="search_account"
+                    style={{ color: fontColor }}
+                  />
+                  <MdCall
+                    onClick={
+                      showIncomingCall || showOutgoingCall
+                        ? undefined
+                        : handleAudioCall
+                    }
+                    className="search_account"
+                    style={{ color: fontColor }}
+                  />
                   <IoSettingsSharp
                     onClick={handleShowSettings}
                     className="search_account" //imprted from icons

@@ -1,5 +1,7 @@
 import useChatStore from "@store/ChatStore";
 import React from "react";
+import "../styles/media.css";
+import "../styles/Utils/NewUserChat.css";
 
 const NewUserChat = () => {
   const { selectedChat } = useChatStore();
@@ -13,7 +15,7 @@ const NewUserChat = () => {
     <div style={new_User_Joined_Message_Style}>
       <div className="user_Joined NewUser" style={{ color: "#ba8229" }}>
         {selectedChat?.type === "group"
-          ? "  If you add someone in the group they will be able to see your previous messages. Messages are End to End-Ecncrypted"
+          ? "Messages are End to End-Ecncrypted - Not even Snaptext can see your messages"
           : "Messages are End to End-Ecncrypted"}
       </div>
     </div>

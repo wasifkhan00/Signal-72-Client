@@ -5,6 +5,9 @@ import axios from "axios";
 import sockets from "../websockets/websockets";
 import useChatStore, { GroupChat, PrivateChat } from "@store/ChatStore";
 import { table } from "console";
+import { AESChatKey } from "../encryption/GenerateAES";
+import useChatModulesStore from "@store/ChatModulesStore";
+import { saveDraftChat } from "../helpers/DraftChats";
 
 export const checkIfUserAlreadyCreatedGroup = async () => {
   try {
@@ -24,7 +27,7 @@ export const checkIfUserAlreadyCreatedGroup = async () => {
       const updated = Array.from(new Set([...current, ...groupsCreatorUsers]));
       store.setEveryUserGroupInfoEmail(updated);
     } else {
-      console.log(response.data.message);
+      return;
     }
   } catch (error) {
     console.log(error);
@@ -54,6 +57,7 @@ export const findUserByEmail = async () => {
           userName: user.names,
           userEmail: user.emails,
           userId: user._id,
+          rsaPublicKey: user.rsaPublicKey,
         }));
 
       store.setShowResponsesFromApi(true);
@@ -62,6 +66,7 @@ export const findUserByEmail = async () => {
       //   return filteredUsers;
     } else {
       store.setWarningMsg("User not found");
+      store.setShowResponsesFromApi(false);
     }
   } catch (error) {
     console.log(error);
@@ -80,6 +85,8 @@ export function usersComponentOnclick(e: React.MouseEvent<HTMLElement>): any {
   const userName = target.getAttribute("data-user-name");
   useCreateGroupStores.setShowResponsesFromApi(false);
   const emails = AuthStores.emailAddress;
+  const rsaPublicKey = target.getAttribute("data-user-rsakey");
+  // console.log(rsaPublicKey);
 
   if (userId === AuthStores.emailAddress.toLowerCase()) {
     useCreateGroupStores.setWarningMsg("You cannot add yourself in the group");
@@ -99,6 +106,7 @@ export function usersComponentOnclick(e: React.MouseEvent<HTMLElement>): any {
       isAdmin: false,
       addedBy: emails,
       userName: userName,
+      rsaPublicKey: rsaPublicKey,
     },
   ];
 
@@ -106,6 +114,7 @@ export function usersComponentOnclick(e: React.MouseEvent<HTMLElement>): any {
     {
       email: userId,
       userName: userName,
+      rsaPublicKey: rsaPublicKey,
     },
   ];
 
@@ -128,6 +137,26 @@ export function usersComponentOnclick(e: React.MouseEvent<HTMLElement>): any {
       return;
     }
 
+    // console.log(chatStore.chatList); // if(PayloadPrivateChatMembers.email === )
+
+    // ****************************************************************************************************************
+
+    const isChatForThisUserALreadyInitiated = chatStore.chatList.some(
+      (chat) =>
+        chat.chatInitiatedTo?.email === userId ||
+        chat.chatInitiatedFrom?.email === userId
+    );
+
+    if (isChatForThisUserALreadyInitiated) {
+      useCreateGroupStores.setWarningMsg(
+        "You have already Initiated Chat with this User"
+      );
+      setTimeout(() => {
+        useCreateGroupStores.setWarningMsg("");
+      }, 3000);
+      return;
+    }
+    // ****************************************************************************************************************
     // ✅ Private Chat Mode — allowed to add
     setSelectedGroupMemberPayload([
       ...chatStore.selectedGroupMemberPayload,
@@ -143,7 +172,7 @@ export function usersComponentOnclick(e: React.MouseEvent<HTMLElement>): any {
 }
 
 // handleCreateGroupFunction
-export const handleCreateGroup = ({ groupNameInput }: any) => {
+export const handleCreateGroup = async ({ groupNameInput }: any) => {
   const { emailAddress, name } = AuthStore.getState();
   const {
     setChatList,
@@ -152,6 +181,8 @@ export const handleCreateGroup = ({ groupNameInput }: any) => {
     setSelectedGroupMemberPayload,
     chatIdGenerator,
   } = useChatStore.getState();
+
+  const { setAddedInTheGroupBy } = useChatModulesStore.getState();
 
   const { setWarningMsg, setGroupMembersInputValue } =
     useCreateGroupStore.getState();
@@ -183,12 +214,20 @@ export const handleCreateGroup = ({ groupNameInput }: any) => {
     ]);
   }
 
+  const groupChatId = chatIdGenerator({ emailAddress: emailAddress });
+
+  const encryptedAESKey = await AESChatKey.generateKeyForGroupChat(
+    groupChatId,
+    updatedMembers
+  );
+
   const groupPayload: GroupChat = {
     type: "group",
     createdBy: emailAddress,
-    chatId: chatIdGenerator({ emailAddress: emailAddress }),
-    groupNames: groupNameInput.current.value, //This should ideally come from input state
+    chatId: groupChatId,
+    groupNames: groupNameInput.current.value,
     members: updatedMembers,
+    encryptedAESKeys: encryptedAESKey?.encryptedAESKeyObject,
   };
 
   if (groupPayload.groupNames !== "" && groupPayload.members.length > 0) {
@@ -200,9 +239,14 @@ export const handleCreateGroup = ({ groupNameInput }: any) => {
         const { success, message } = response.data;
         if (success) {
           setChatList((prevChatList) => [...prevChatList, groupPayload]);
+          // setAddedInTheGroupBy(groupPayload.createdBy); //SHOULD BE BROADCASTED AND SENT VIA EMIT
           setShowCreateGroupIntf(false);
           setSelectedGroupMemberPayload([]);
-          sockets.emit("chatInitated", emailAddress);
+          if (!sockets.connected) sockets.connect();
+          sockets.emit("chatInitated", groupPayload.chatId);
+          sockets.emit("newChat", groupPayload);
+          // sockets.emit('') //emit event directly to the other user and let him know hes initiated chat to.... but that would be empty planning on to let him know when the user initiates chat
+          // when the user sends message and hes yet not added emit('userIsInitiatedWithChat) for instance i initiate chat to person a and i send him message he should instantly recieve it without being redirected to the chat
         } else {
           setWarningMsg(message);
         }
@@ -221,7 +265,7 @@ export const handleCreateGroup = ({ groupNameInput }: any) => {
 
 // handleCreateContactFunction
 
-export const handleCreateContact = ({ groupNameInput }: any) => {
+export const handleCreateContact = async ({ groupNameInput }: any) => {
   const { emailAddress, name } = AuthStore.getState();
   const {
     setChatList,
@@ -271,12 +315,22 @@ export const handleCreateContact = ({ groupNameInput }: any) => {
     userName: (chatInitiatedTo as any).userName ?? "Unknown", // fallback if needed
   };
 
+  const userRsaPublicKey = selectedGroupMemberPayload[0].rsaPublicKey;
+
+  const privateChatId = chatIdGenerator({ emailAddress: emailAddress });
+  // console.log(selectedGroupMemberPayload);
+  const encryptedAESKey = await AESChatKey.generateKeyForChat(
+    privateChatId,
+    userRsaPublicKey
+  );
+
   const privateChatPayload: PrivateChat = {
     type: "private",
     chatInitiatedFrom: adminPayload,
     chatInitiatedTo: chatInitiatedToPayload,
     chatName: groupNameInput.current.value,
-    chatId: chatIdGenerator({ emailAddress: emailAddress }),
+    chatId: privateChatId,
+    encryptedAESKeys: encryptedAESKey.encryptedAESKeyObject,
   };
 
   if (
@@ -284,24 +338,35 @@ export const handleCreateContact = ({ groupNameInput }: any) => {
     privateChatPayload.chatInitiatedFrom.email !== "" &&
     privateChatPayload?.chatInitiatedTo?.email !== ""
   ) {
-    axios
-      .post(Endpoints.userInitiatePrivateChat, privateChatPayload, {
-        headers: Endpoints.getHeaders(),
-      })
-      .then((response) => {
-        const { success, message } = response.data;
-        if (success) {
-          setChatList((prevChatList) => [...prevChatList, privateChatPayload]);
-          setShowCreateGroupIntf(false);
-          setSelectedGroupMemberPayload([]);
-          sockets.emit("chatInitated", emailAddress);
-        } else {
-          setWarningMsg(message);
-        }
-      })
-      .catch((err) => setWarningMsg(err.message));
-    setWarningMsg("");
-    setGroupMembersInputValue("");
+    const saveChatToDraft = saveDraftChat(privateChatPayload);
+
+    if (saveChatToDraft === "chat_already_exists") {
+      setWarningMsg("Chat Already Initiated");
+      return;
+    } else {
+      setChatList((prevChatList) => [...prevChatList, privateChatPayload]);
+      setShowCreateGroupIntf(false);
+    }
+
+    //refrain from storing private chat initaition directly instead store it in drafts instead of sending to db just only on initiations
+    // axios
+    //   .post(Endpoints.userInitiatePrivateChat, privateChatPayload, {
+    //     headers: Endpoints.getHeaders(),
+    //   })
+    //   .then((response) => {
+    //     const { success, message } = response.data;
+    //     if (success) {
+    //       setChatList((prevChatList) => [...prevChatList, privateChatPayload]);
+    //       setShowCreateGroupIntf(false);
+    //       setSelectedGroupMemberPayload([]);
+    //       sockets.emit("chatInitated", privateChatPayload.chatId);
+    //     } else {
+    //       setWarningMsg(message);
+    //     }
+    //   })
+    //   .catch((err) => setWarningMsg(err.message));
+    // setWarningMsg("");
+    // setGroupMembersInputValue("");
   } else {
     setWarningMsg("Fields cannot be blank");
 

@@ -1,0 +1,47 @@
+.chat_Details {
+  box-shadow: 0 4px 7px -6px rgb(233, 233, 233);
+  margin-top: 1.1999999999999993rem;
+  justify-content: space-between;
+  border-radius: 1px;
+  width: -webkit-fill-available;
+  margin: 0.6rem 0.2rem;
+  background: none;
+  display: flex;
+  height: fit-content;
+  padding: 0.5em;
+}
+
+.chat_Details:hover {
+  background: #f6f6f6;
+}
+
+.topChatContainer {
+  margin-top: 4.89rem;
+}
+
+.imgContainers {
+  display: flex;
+  align-items: center;
+  margin: 0 0.5rem;
+}
+.imageContainerUser {
+  width: 42px;
+}
+.nameC {
+  margin: 0.3rem 0.5rem;
+}
+.nameC h5 {
+  font-size: 11px;
+}
+
+.nameC h6 {
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
+}
+.time {
+  margin-top: 0.3rem;
+}
+.time {
+  font-size: 9px;
+  float: right;
+}

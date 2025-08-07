@@ -3,7 +3,8 @@ import { buttonStyles, button_Container_Style } from "../styles/Styles";
 import useAppStore from "@store/AppStore";
 import useChatStore from "@store/ChatStore";
 import useChatModulesStore from "@store/ChatModulesStore";
-
+import "../styles/components/CreateGroupInterface.css";
+import "../styles/media.css";
 const DiscardMedia = () => {
   const { dark } = useAppStore();
   const { setviewImageContainer, setViewImage } = useChatModulesStore();

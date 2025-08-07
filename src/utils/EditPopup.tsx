@@ -19,9 +19,11 @@ const PopupMenu = () => {
   } = useChatModulesStore();
   const {
     selectedGroupMemberPayload,
+    showCreateGroupIntf,
     setSelectedGroupMemberPayload,
     setShowCreateGroupIntf,
     setIsModePrivateChat,
+
     isModePrivateChat,
     setDiscardMyMedia,
   } = useChatStore();

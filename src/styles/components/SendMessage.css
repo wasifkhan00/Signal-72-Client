@@ -1,0 +1,57 @@
+.send_Message_Input {
+  height: 55px;
+  flex-shrink: 0;
+  border-top: 1px solid #ddd;
+  padding: 0 1rem;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.send_Message_Input #comment {
+  overflow: hidden;
+  padding: 0 1rem;
+  max-width: 60vw;
+  font-size: 11px;
+  resize: none;
+  width: 50vw;
+  outline: none;
+  padding-top: 0.3rem;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgb(202, 201, 201);
+}
+.send_Message_Input #comment {
+  overflow: hidden;
+  padding: 0 1rem;
+  max-width: 60vw;
+  font-size: 11px;
+  resize: none;
+  width: 50vw;
+  outline: none;
+  padding-top: 0.3rem;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgb(202, 201, 201);
+}
+
+.attachments_emojis {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin: 0 0.7rem;
+}
+.attachments_emojis span {
+  margin: 0 0.7rem;
+  font-size: 15px;
+}
+.sendIcon {
+  margin: 0 1rem;
+  font-size: 15px;
+}
+.emojiContainer {
+  position: absolute;
+  margin-bottom: 34rem;
+}

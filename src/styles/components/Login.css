@@ -1,0 +1,126 @@
+/* Login Component Css Start */
+
+.App {
+  background: darkslategrey;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 100%;
+  min-height: 100vh;
+}
+.container {
+  display: flex;
+  justify-content: space-between;
+  box-shadow: 0px 0px 10px rgba(0, 123, 255, 0.2);
+}
+.container input {
+  color: white;
+}
+.container span {
+  /* margin-top: 2.9rem; */
+  font-size: 11px;
+
+  color: #b8adad;
+}
+
+.form_inputs {
+  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+  display: flex;
+  background: transparent;
+  /*   border: 2px solid #2287bd; */
+  box-shadow: 1px 1px 7px #0ba997;
+  /*   box-shadow: 3px 3px 1px #3b92aa; */
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+  width: 32vw;
+  padding: 4rem 0;
+  /* height: 75vh; */
+  font-size: 13px;
+}
+
+.heading_top {
+  margin-bottom: 3rem;
+}
+
+.heading_top h3 {
+  font-size: 20px;
+  color: white;
+}
+
+.form_inputs input {
+  /* border: none;   */
+  border-bottom: 1px solid #a3a3a3 !important;
+  margin: 0.4rem 0;
+  /* font-size: 11px; */
+  height: 39px;
+  padding: 0 0.6rem;
+  outline: none;
+  background: none;
+  width: 27vw;
+}
+.form_inputs input:focus {
+  height: 38px;
+  border-color: wheat;
+  /* border-right: 1px solid rgb(73, 73, 73) !important;
+  border-bottom: 1px solid rgb(73, 73, 73) !important;
+  border-top: 1px solid rgb(73, 73, 73) !important;
+  border-left: 1px solid rgb(73, 73, 73) !important; */
+}
+
+.inputThree {
+  background: red;
+  padding: 0 !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.inputThree input {
+  font-size: 8px;
+  margin: 0;
+  padding: 0 !important;
+  width: 10px !important;
+  height: 10px !important;
+}
+
+.form_inputs .button {
+  border-radius: 1px;
+  background: transparent;
+  width: 26vw;
+  font-size: 11px;
+
+  /* width: 40vw; */
+  margin-top: 1.7rem;
+  text-align: center;
+  text-decoration: none;
+  border: 1px solid rgb(11 169 151);
+  /* box-shadow: 0px 0px 2rgb(210, 214, 218)22); */
+  box-shadow: 0px 0px 2px rgb(71 147 222);
+  cursor: pointer;
+  padding: 0.7rem 0;
+  color: rgb(255, 255, 255) !important;
+  outline: none;
+  transition: all 0.3s ease-in-out;
+}
+
+.form_inputs .button:disabled {
+  cursor: not-allowed; /* Shows a visual "disabled" cursor */
+  opacity: 0.6; /* Optional: makes it visually dim */
+}
+
+.form_inputs .button:hover {
+  box-shadow: 0px 0px 4px rgb(11 169 151);
+}
+
+.inputOne,
+.inputTwo {
+  margin: 0.7rem 0;
+  color: rgb(255, 255, 255);
+  display: flex;
+  flex-direction: column;
+  font-size: 11px;
+}
+
+/* Login Component Css End */

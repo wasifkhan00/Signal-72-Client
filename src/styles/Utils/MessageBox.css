@@ -1,0 +1,28 @@
+.messages_Container {
+  margin-top: 0.7rem;
+  display: flex;
+  align-items: center;
+}
+.messages_Container span {
+  margin-top: 1rem;
+  font-size: 11px;
+}
+.receive_message_box {
+  border-radius: 10px;
+  margin-top: 1rem;
+  margin-left: 0.3rem;
+  min-width: 15vw;
+  max-width: 20vw;
+  font-family: sans-serif;
+  background-color: rgb(217, 217, 217);
+  border: 1px solid rgb(71 147 222);
+  box-shadow: 1px 1px 2px rgb(71 147 222);
+  padding: 0.7em;
+  font-size: 13px;
+  white-space: pre-wrap !important;
+}
+#receiveMessage {
+  overflow-x: hidden !important;
+  letter-spacing: 1px;
+  word-break: break-word;
+}

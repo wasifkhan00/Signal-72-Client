@@ -1,5 +1,7 @@
 import React from "react";
 import "../styles/chat.css";
+import "../styles/media.css";
+import "../styles/components/User.css";
 import useChatStore from "@store/ChatStore";
 import useAppStore from "@store/AppStore";
 import Image from "next/image";
@@ -20,7 +22,9 @@ const User: React.FC<UserProps> = ({
   chatId,
   lastMessageSentBy,
   userId,
+  rsaPublicKey,
 }) => {
+  // console.log(lastMessage);
   const unreadMessages = useChatStore((state) => state.unreadMessages);
   const dark = useAppStore((state) => state.dark);
 
@@ -51,6 +55,7 @@ const User: React.FC<UserProps> = ({
   return (
     <>
       <section
+        data-user-rsakey={rsaPublicKey}
         data-user-id={userId}
         data-chat-id={chatId}
         data-user-name={lastMessage}
@@ -58,7 +63,7 @@ const User: React.FC<UserProps> = ({
         style={user_Container_Style}
         className={
           topChatContainer === true
-            ? " chat_Details topChatContainer"
+            ? "chat_Details topChatContainer"
             : "chat_Details"
         }
       >
@@ -79,9 +84,11 @@ const User: React.FC<UserProps> = ({
                 color: fontColor,
               }}
             >
-              {lastMessage
+              {/* {lastMessage
                 ? `${lastMessageSentBy}:${lastMessage}`
-                : "Start Conversation"}
+                : "Start Conversation"} */}
+
+              {lastMessage}
 
               {/* <Image src={groupIcon} alt="group Icon" width={15} height={15} /> */}
             </h6>

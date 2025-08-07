@@ -1,0 +1,97 @@
+/* copying from here */
+.Create_Group_Interface_ChatJs_Container {
+  position: fixed;
+  top: 35%;
+  left: 35%;
+  z-index: 2;
+}
+.createGroupInterfaceContainer {
+  box-shadow: 1px 1px 6px rgb(170, 168, 168);
+  border-radius: 9px;
+  color: white;
+  padding: 1.2rem;
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  background-size: cover;
+  display: flex;
+  /* z-index: 1; */
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  width: 40vw;
+}
+
+.createGroupInterfaceContainer input {
+  margin-top: 1.5rem;
+  color: rgb(0, 0, 0);
+  font-size: 10px;
+  height: 25px;
+  border-bottom: 1px solid rgb(163 163 163) !important;
+  padding: 0.1rem 0.6rem;
+  outline: none;
+  background: none;
+  border: none;
+  width: 28vw;
+}
+.inputSecondContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.SelectedUsersContainer {
+  display: flex;
+}
+.inputSecondContainer span {
+  color: white;
+  padding: 2px 19px;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  background: grey;
+  border-radius: 20px;
+  font-size: 11px;
+  text-align: center;
+}
+
+.inputSecondContainer small {
+  padding-left: 0.3rem;
+  padding-top: 1rem;
+  cursor: pointer;
+}
+.createGroupInterfaceContainer button {
+  margin: 0.4rem 0.3rem;
+  padding: 4px 17px;
+  border-radius: 30px;
+  font-size: 10px;
+  border: none;
+  cursor: pointer;
+  color: white !important;
+  outline: none;
+  background-color: #1d6486;
+}
+
+/* Scrollable container (not used directly here but kept for future reference) */
+.containerOfResponses {
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 0 2px rgb(196, 192, 192);
+  width: 28vw;
+  height: 20rem;
+  position: fixed;
+  overflow-y: auto;
+  top: 1.4rem;
+  margin: 6rem 35rem;
+}
+
+.containerOfResponses::-webkit-scrollbar {
+  width: 12px;
+}
+
+.containerOfResponses::-webkit-scrollbar-track {
+  background: #8d8d8c;
+}
+
+.containerOfResponses::-webkit-scrollbar-thumb {
+  background-color: #e5e5e5;
+  border: none;
+}
+/* copying from here */

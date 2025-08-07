@@ -1,0 +1,7 @@
+.sendUserImage {
+  border-radius: 10px;
+  margin-top: 1rem;
+  margin-left: 0.3rem;
+  box-shadow: 1px 2px 2px rgb(148 147 147 / 54%);
+  width: 30%;
+}

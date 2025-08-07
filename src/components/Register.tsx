@@ -1,105 +1,188 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRegisterStore } from "@store/RegisterStore"; // adjust path if needed
 import { AuthStore } from "@store/AuthStore"; // adjust path
 import axios from "axios";
 import "../app/globals.css";
 import "../styles/chat.css";
+import "../styles/media.css";
+import "../styles/components/Login.css";
+import "../styles/components/Register.css";
 import Endpoints from "../endpoint/endpoints";
 import SmallSpinnerLoader from "../utils/SmallSpinnerLoader";
 import OtpAuthentication from "./Otp";
 import { useRouter } from "next/navigation";
 import { useLoginStore } from "@store/LoginStore";
 import sockets from "../websockets/websockets";
+import { verifyToken } from "../lib/VerifyToken";
+import { generateAndStoreRSAKeyPair } from "../encryption/GenerateRSA";
+import { createSessionKeyAndCacheRSAKey } from "../encryption/CreateSessionKeyAndCacheRSAKey";
+// import {
+//   createSessionKeyAndCacheGeneratedRSAKey,
+//   createSessionKeyAndCacheRSAKey,
+// } from "../encryption/CreateSessionKeyAndCacheRSAKey";
 
 const Register = () => {
   const router = useRouter();
+  const { setUsersName } = useLoginStore();
+  const { setEmailAddress, setShowChat, setName, setToken, setRSAKeyPairs } =
+    AuthStore();
+  const [successMessage, setSuccessMessage] = useState(false);
 
-  const setEmailAddress = AuthStore((state) => state.setEmailAddress);
   const {
+    setFullNameValidator,
+    setAccountValidator,
+    setPasswordValidator,
+    setPassword,
+    setErrorNetworkWarning,
+    setAlreadyExistsEmail,
+    setShowOtpScreen,
+    setHasJustRegistered,
+    showWaitForApiResponse,
     fullName,
     email,
     password,
     confirmPassword,
-    dbUserData,
-
+    setDBUserData,
+    setShowWaitForApiResponse,
     fullNameValidator,
     accountValidator,
     passwordValidator,
     confirmPasswordValidator,
+
+    setFullName,
+    setEmail,
     alreadyExistsEmail,
-    showWaitForApiResponse,
-    successMessage,
-    showOtpScreen,
-    errorNetworkWarning,
-
-    setField,
     resetAll,
+    errorNetworkWarning,
+    setConfirmPassword,
+    setConfirmPasswordValidator,
   } = useRegisterStore();
-
-  const { setUsersName } = useLoginStore();
-
-  const { showChat, setShowChat, setName, setToken } = AuthStore();
+  const ranOnceRef = useRef(false);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const nameRegex = /^[a-zA-Z\s]{5,50}$/;
   const isContainsNumber = /^(?=.*[0-9]).*$/;
 
   useEffect(() => {
+    if (ranOnceRef.current) return;
+    ranOnceRef.current = true;
+
     const savedToken = localStorage.getItem("token");
-    const savedName = localStorage.getItem("names");
-    const savedAccount = localStorage.getItem("emails");
+    const savedNames = localStorage.getItem("names");
+    const savedEmail = localStorage.getItem("emails");
 
-    if (savedToken && savedName && savedAccount) {
-      setField("successMessage", true);
+    if (!savedToken || !savedNames || !savedEmail) return;
 
-      setUsersName(savedName);
-      setShowChat(true);
-      router.push("/chat");
-
-      setEmailAddress(savedAccount);
-      setName(savedName);
-      setToken(savedToken);
-      //   props.gotTheEmail(savedAccount); //function came from app.js
-
-      // Reconnect socket if not already connected
-      if (!sockets.connected) {
-        sockets.connect();
-      }
-    }
+    verifyToken({
+      savedToken,
+      savedEmail,
+      savedNames,
+      setSuccessMessage,
+      setHasJustRegistered,
+      setUsersName,
+      setEmailAddress,
+      setName,
+      setToken,
+      setShowChat,
+      router,
+      sockets,
+    });
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const {
-      fullName,
-      email,
-      password,
-      confirmPassword,
-      fullNameValidator,
-      accountValidator,
-      passwordValidator,
-      confirmPasswordValidator,
-      alreadyExistsEmail,
-      setField,
-      resetAll,
-    } = useRegisterStore.getState();
+    const unlockRSAKeyPairs = await generateAndStoreRSAKeyPair(password);
 
-    const nameRegex = /^[a-zA-Z\s]{5,50}$/;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const isContainsNumber = /^(?=.*[0-9]).*$/;
+    const createSessionKeyAndCacheRSAKeys =
+      await createSessionKeyAndCacheRSAKey(unlockRSAKeyPairs);
+    setRSAKeyPairs({
+      rsaPrivateKey: unlockRSAKeyPairs.rsaPrivateKey,
+      rsaPublicKey: unlockRSAKeyPairs.publicKeyBase64,
+    });
+
+    // setRSAKeyPairs({
+    //   rsaPrivateKey: rsaPublicKey.rsaPrivateKeyEncrypted,
+    //   rsaPublicKey: rsaPublicKey.rsaPublicKeyBase64,
+    // });1
+
+    //  const unlockRSAKeyPairs = await unlockRSAPrivateKey(password);
+    //           if (
+    //             unlockRSAKeyPairs &&
+    //             res.data.rsaPublicKey === unlockRSAKeyPairs?.publicKeyBase64
+    //           ) {
+    //             console.log(unlockRSAKeyPairs);
+    //             const createSessionKeyAndCacheRSAKeys =
+    //               await createSessionKeyAndCacheRSAKey(unlockRSAKeyPairs);
+    //             console.log(createSessionKeyAndCacheRSAKeys);
+    //             setRSAKeyPairs({
+    //               rsaPrivateKey: unlockRSAKeyPairs.rsaPrivateKey,
+    //               rsaPublicKey: unlockRSAKeyPairs.publicKeyBase64,
+    //             });
+    //           } else {
+    //             console.log(
+    //               "keys couldnt be send because the db and the localforage public keys doesnt match"
+    //             );
+    //           }
+    // ***************************************************************************************************************
+    // const unlockRSAKeyPairs = await unlockRSAPrivateKey(password);
+    //         if (
+    //           unlockRSAKeyPairs &&
+    //           res.data.rsaPublicKey === unlockRSAKeyPairs?.publicKeyBase64
+    //         ) {
+    //           const createSessionKeyAndCacheRSAKeys =
+    //             await createSessionKeyAndCacheRSAKey(unlockRSAKeyPairs);
+    //           console.log(createSessionKeyAndCacheRSAKeys);
+    //           setRSAKeyPairs({
+    //             rsaPrivateKey: unlockRSAKeyPairs.rsaPrivateKey,
+    //             rsaPublicKey: unlockRSAKeyPairs.publicKeyBase64,
+    //           });
+    //         } else {
+    //           console.log(
+    //             "keys couldnt be send because the db and the localforage public keys doesnt match"
+    //           );
+    //         }
+    // ***************************************************************************************************************
+    // setRSAKeyPairs({
+    //   rsaPrivateKey: unlockRSAKeyPairs.rsaPrivateKey,
+    //   rsaPublicKey: unlockRSAKeyPairs.publicKeyBase64,
+    // });
+    // rsaPrivateKeyEncrypted
+    // :
+    // ArrayBuffer(2390)
+    // rsaPublicKeyBase64
+    // :
+
+    // const { rsaPrivateKeyEncrypted, rsaPublicKeyBase64 } = rsaPublicKey;
+
+    // 🛡️ Unlock RSA key using password
+    // const unlockRSAKeyPairs = await unlockRSAPrivateKey(password);
+    // if (
+    //   unlockRSAKeyPairs &&
+    //   res.data.rsaPublicKey === unlockRSAKeyPairs?.publicKeyBase64
+    // ) {
+    //   console.log(createSessionKeyAndCacheRSAKeys);
+    //   setRSAKeyPairs({
+    //     rsaPrivateKey: unlockRSAKeyPairs.rsaPrivateKey,
+    //     rsaPublicKey: unlockRSAKeyPairs.publicKeyBase64,
+    //   });
+    // } else {
+    //   console.log(
+    //     "keys couldnt be send because the db and the localforage public keys doesnt match"
+    //   );
+    // }
 
     const formData = {
       name: fullName,
       email,
       password,
       cPassword: confirmPassword,
+      rsaPublicKey: unlockRSAKeyPairs.publicKeyBase64,
     };
 
-    // Validation Checks
     const isFormValid =
       fullName.trim() !== "" &&
       email.trim() !== "" &&
@@ -116,129 +199,119 @@ const Register = () => {
       !alreadyExistsEmail;
 
     if (isFormValid) {
-      setField("showWaitForApiResponse", true);
+      setShowWaitForApiResponse(true);
 
       try {
         const response = await axios.post(Endpoints.registerUser, formData, {
           headers: Endpoints.getHeaders(),
         });
 
-        console.log("register response:");
-        console.log(response);
-
         if (response.data.success) {
           localStorage.setItem("unverifiedEmail", formData.email);
-          setField("dbUserData", formData);
-          setField("successMessage", true);
-          setField("showWaitForApiResponse", false);
 
+          setDBUserData(formData);
+          setSuccessMessage(true);
+          setShowWaitForApiResponse(false);
           setEmailAddress(formData.email);
-
           setTimeout(() => {
-            setField("showOtpScreen", true);
+            setShowOtpScreen(true);
             setTimeout(() => {
-              setField("hasJustRegistered", true);
+              setHasJustRegistered(true);
               router.push("/register/otp");
             }, 1000);
           }, 1000);
-
           resetAll();
         } else {
-          setField("showWaitForApiResponse", false);
-          setField("alreadyExistsEmail", true);
+          setShowWaitForApiResponse(false);
+          setAlreadyExistsEmail(true);
         }
       } catch (err) {
-        setField("showWaitForApiResponse", false);
-        setField("errorNetworkWarning", true);
+        setShowWaitForApiResponse(false);
+        setErrorNetworkWarning(true);
         console.error("Registration error:", err);
       }
     } else {
-      // Trigger frontend validations
-      setField("fullNameValidator", true);
-      setField("accountValidator", true);
-      setField("passwordValidator", true);
-      setField("confirmPasswordValidator", true);
-      setField("alreadyExistsEmail", false);
+      // Trigger frontend
+
+      setFullNameValidator(true);
+      setAccountValidator(true);
+      setPasswordValidator(true);
+      setConfirmPasswordValidator(true);
+      setAlreadyExistsEmail(false);
     }
   };
 
   const handleFullNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { setField } = useRegisterStore.getState();
     const value = e.target.value;
 
     if (
       value === "" ||
       value.length < 5 ||
-      /\s{2,}/.test(value) || // double spaces
+      /\s{2,}/.test(value) ||
       !nameRegex.test(value)
     ) {
-      setField("fullNameValidator", true);
+      setFullNameValidator(true);
     } else {
-      setField("fullName", value);
-      setField("fullNameValidator", false);
+      setFullName(value);
+      setFullNameValidator(false);
     }
 
-    // Reset related warnings
-    setField("alreadyExistsEmail", false);
-    setField("accountValidator", false);
-    setField("passwordValidator", false);
-    setField("confirmPasswordValidator", false);
+    setAlreadyExistsEmail(false);
+    setAccountValidator(false);
+    setPasswordValidator(false);
+    setConfirmPasswordValidator(false);
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    const { setField } = useRegisterStore.getState();
 
     if (!emailRegex.test(value)) {
-      setField("accountValidator", true);
+      setAccountValidator(true);
     } else {
-      setField("email", value);
-      setField("accountValidator", false);
+      setEmail(value);
+      setAccountValidator(false);
     }
 
-    // Reset other warning flags
-    setField("fullNameValidator", false);
-    setField("alreadyExistsEmail", false);
-    setField("passwordValidator", false);
-    setField("confirmPasswordValidator", false);
+    setFullNameValidator(false);
+    setAlreadyExistsEmail(false);
+    setPasswordValidator(false);
+    setConfirmPasswordValidator(false);
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    const { setField } = useRegisterStore.getState();
 
     if (value === "" || value.length < 8 || !isContainsNumber.test(value)) {
-      setField("passwordValidator", true);
+      setPasswordValidator(true);
     } else {
-      setField("password", value);
-      setField("passwordValidator", false);
+      setPassword(value);
+      setPasswordValidator(false);
     }
 
-    // Reset other validation flags
-    setField("accountValidator", false);
-    setField("fullNameValidator", false);
-    setField("alreadyExistsEmail", false);
-    setField("confirmPasswordValidator", false);
+    setAccountValidator(false);
+    setFullNameValidator(false);
+    setAlreadyExistsEmail(false);
+    setConfirmPasswordValidator(false);
   };
 
   const handleConfirmPasswordChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const value = e.target.value;
-    const { password, setField } = useRegisterStore.getState();
+    const { password, setConfirmPassword, setConfirmPasswordValidator } =
+      useRegisterStore.getState();
 
     if (value !== password) {
-      setField("confirmPasswordValidator", true);
+      setConfirmPasswordValidator(true);
     } else {
-      setField("confirmPassword", value);
-      setField("confirmPasswordValidator", false);
+      setConfirmPassword(value);
+      setConfirmPasswordValidator(false);
     }
 
-    // Reset other validation flags
-    setField("accountValidator", false);
-    setField("fullNameValidator", false);
-    setField("alreadyExistsEmail", false);
-    setField("passwordValidator", false);
+    setAccountValidator(false);
+    setFullNameValidator(false);
+    setAlreadyExistsEmail(false);
+    setPasswordValidator(false);
   };
 
   return (
@@ -361,7 +434,6 @@ const Register = () => {
           ) : null}
         </form>
       </div>
-      {/* )} */}
     </>
   );
 };

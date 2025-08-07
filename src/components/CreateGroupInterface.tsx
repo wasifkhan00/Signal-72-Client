@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react";
-import "../styles/chatInterface.css";
+import "../styles/components/CreateGroupInterface.css";
 import User from "../components/User";
 import {
   findUserByEmail,
@@ -21,6 +21,7 @@ const Create_Group_Interface = () => {
     showCreateGroupIntf,
     isModePrivateChat,
     selectedGroupMemberPayload,
+    setSelectedGroupMemberPayload,
   } = useChatStore();
 
   const {
@@ -46,7 +47,7 @@ const Create_Group_Interface = () => {
   }, []);
 
   useEffect(() => {
-    const findUserByEmailDebounced = debounce(findUserByEmail, 1200);
+    const findUserByEmailDebounced = debounce(findUserByEmail, 1500);
     if (groupMembersInputValue !== "") {
       findUserByEmailDebounced();
     }
@@ -54,26 +55,35 @@ const Create_Group_Interface = () => {
 
   function removeTheSpan(e: React.MouseEvent<HTMLInputElement>) {
     const emailToRemove = e.currentTarget.getAttribute("data-user-email");
-    //  const chatStore = useChatStore.getState();
+    if (!emailToRemove) return;
 
-    // Filter out the member with the clicked email
+    console.log("Removing email:", emailToRemove);
 
+    const updatedArray = selectedGroupMemberPayload.filter(
+      (member) => member.email !== emailToRemove
+    );
+
+    setSelectedGroupMemberPayload(updatedArray);
     setWarningMsg("");
+
+    setTimeout(() => {
+      console.log(selectedGroupMemberPayload);
+    }, 6000);
   }
 
   const handleClickOnFirstInput = (e: React.MouseEvent<HTMLInputElement>) => {
     setShowResponsesFromApi(false);
   };
 
-  const handleClickSecondInputContainer = (
-    e: React.MouseEvent<HTMLInputElement>
-  ) => {
-    if (groupMembersResponse.length > 0) {
-      setShowResponsesFromApi(!showResponsesFromApi);
-    } else {
-      return null;
-    }
-  };
+  // const handleClickSecondInputContainer = (
+  //   e: React.MouseEvent<HTMLInputElement>
+  // ) => {
+  //   if (groupMembersResponse.length > 0) {
+  //     // setShowResponsesFromApi(!showResponsesFromApi);
+  //   } else {
+  //     return null;
+  //   }
+  // };
 
   const handleChangeSecondInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -112,7 +122,7 @@ const Create_Group_Interface = () => {
         <div className="inputSecondContainer">
           <input
             ref={groupMembersInputValues}
-            onClick={handleClickSecondInputContainer}
+            // onClick={handleClickSecondInputContainer}
             type="text"
             onChange={handleChangeSecondInput}
             required
@@ -159,6 +169,7 @@ const Create_Group_Interface = () => {
                         marginTop=".4rem"
                         groupName={users.userEmail}
                         lastMessage={users.userName}
+                        rsaPublicKey={users.rsaPublicKey}
                         wholeElementClicked={usersComponentOnclick}
                       />
                     </React.Fragment>

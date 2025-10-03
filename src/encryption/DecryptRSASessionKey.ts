@@ -10,7 +10,7 @@ export const decryptRSAKeyFromSessionKey =
     try {
       const sessionKeyBase64 =
         (window as any).sessionAppKeyBase64 ||
-        sessionStorage.getItem("sessionAppKeyBase64");
+        (await localforage.getItem("sessionAppKeyBase64"));
 
       if (!sessionKeyBase64) throw new Error("Session key not found.");
 

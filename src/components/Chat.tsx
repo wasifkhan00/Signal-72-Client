@@ -1,62 +1,58 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Create_Group_Interface from "./CreateGroupInterface";
 import DiscardMedia from "../utils/DiscardMedia";
 import sockets from "../websockets/websockets";
-import RightSideEmpty from "./RightSideEmpty";
+// import RightSideEmpty from "./RightSideEmpty";
 import Endpoints from "../endpoint/endpoints";
 import { AuthStore } from "@store/AuthStore";
-import RightSideChat from "./RightSideChat";
-import LeftSideEmpty from "./LeftSideEmpty";
-import UserExitGroup from "./UserExitGroup";
-import EditGroupName from "./EditGroupName";
-import PopupMenu from "../utils/EditPopup";
+// import RightSideChat from "./RightSideChat";
+// import LeftSideEmpty from "./LeftSideEmpty";
+import UserExitGroup from "./UserExitGroupArchive";
+import EditGroupName from "./EditGroupNameArchive";
+// import PopupMenu from "../utils/EditPopup";
 import useAppStore from "@store/AppStore";
 import useChatStore from "@store/ChatStore";
-import Loading from "../utils/Loading";
-import "../styles/chatInterface.css";
-import "../styles/components/CreateGroupInterface.css";
-import "../styles/media.css";
+// import Loading from "../utils/Loading";
+// import "../styles/chatInterface.css";
+// import "../styles/components/CreateGroupInterface.css";
+// import "../styles/media.css";
 import "../styles/components/Chat.css";
 import axios from "axios";
-import User from "./User";
-import Login from "./Login";
+// import User from "./User";
+// import Login from "./LoginArchive";
 import { fetchMessages } from "./FetchMessages";
 import useChatModulesStore from "@store/ChatModulesStore";
 import { AESChatKey } from "../encryption/GenerateAES";
 import { decryptRSAKeyFromSessionKey } from "../encryption/DecryptRSASessionKey";
 import { removeDraftChat } from "../helpers/DraftChats";
-import { decodeEmail, decodeKey } from "../helpers/DecodeEmail";
+import { decodeEmail } from "../helpers/DecodeEmail";
 import fetchDraftChats from "../helpers/FetchDrafts";
 import { handleTabFocus } from "../helpers/ScreenVisibility";
 import { requestNotificationPermission } from "./Notifications";
-import {
-  chatMainContainerStyle,
-  Create_Group_Interface_Container_ChatJs_Style,
-  left_side_Header_Style,
-  left_side_Style,
-} from "@styles/components/Chat";
+import { chatMainContainerStyle } from "@styles/components/Chat";
 import { getMicrophoneAccess } from "../helpers/MicrophonePermission";
 import { playMicAudio } from "../Testing/AudioTesting";
 import IncomingCallModal from "./CallRinging";
 import OutgoingCallModal from "./OutgoingCall";
-import React, { useState } from "react";
+// import { CreateContactModal } from "../tailwindComponents/components/CreateContactModal";
+import { EmptyState } from "../tailwindComponents/components/EmptyState";
+import { CreateGroupModal } from "../tailwindComponents/components/CreateGroupModal";
+import { ChatSidebar } from "../tailwindComponents/components/ChatSidebar";
+import { ChatArea } from "../tailwindComponents/components/ChatArea";
+import { ChatLoadingState } from "../tailwindComponents/components/ui/ChatLoadingState";
 
 const Chat = () => {
   const { emailAddress, setRSAKeyPairs } = AuthStore();
-
   const [ringingUserData, setRingingUserData] = useState<any>(null);
-
   const didRunRef = useRef(false);
-
   const {
     userIsChangingGroupName,
-    showRightSideMobile,
+    // showRightSideMobile,
     setShowRightSideMobile,
-    isChecked,
+    // isChecked,
     loggOut,
     userIsExitingTheGroup,
-    dark,
-    addMoreFriendsInGroup,
+    // dark,
     setShowDarkAndLightModeDropDown,
   } = useAppStore();
 
@@ -75,27 +71,25 @@ const Chat = () => {
     userOnlineStatus,
     showCreateGroupIntf,
     selectedChat,
-    selectedGroupMemberPayload,
     showOutgoingCall,
     setShowOutgoingCall,
+    openCreateGroupModal,
     setMessages,
   } = useChatStore();
 
   const { viewImageContainer } = useChatModulesStore();
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false); //copied from figma make for respin
 
   const fetchedChatIds = useRef<Set<string>>(new Set());
 
-  const fontColor = dark ? "#ffff" : "#000000";
-
   useEffect(() => {
-    const drafts = fetchDraftChats();
+    const drafts = fetchDraftChats(); // already an array
 
     if (drafts.length > 0) {
       setChatList((prevChats) => {
         const filtered = prevChats.filter(
           (chat) => !drafts.some((draft: any) => draft.chatId === chat.chatId)
         );
-
         return [...drafts, ...filtered];
       });
     }
@@ -153,15 +147,10 @@ const Chat = () => {
 
       removeDraftChat(newchat.chatId);
 
-      console.log(decodedAESKeyMap[emailAddress]);
       AESChatKey.storeKeyLocally(
         newchat.chatId,
         decodedAESKeyMap[emailAddress]
       );
-      console.log(newchat.encryptedAESKeys);
-
-      console.log(decodedAESKeyMap);
-      console.log(messagePayload);
 
       try {
         const decryptedText = await AESChatKey.decryptMessage(
@@ -207,7 +196,7 @@ const Chat = () => {
     const handleRinging = (callPayload) => {
       setShowIncomingCall(true);
       setRingingUserData(callPayload);
-      console.log(callPayload);
+      // console.log(callPayload);
       // sockets.emit("call:accepted", callPayload);
     };
 
@@ -230,6 +219,7 @@ const Chat = () => {
       alert("regretfully the user has declined the call he might be busy");
     };
 
+    sockets.on("deletePrivateChatDraft", removeDraftChat);
     sockets.on("call:acceptedByUser", handleCallAccepted);
     sockets.on("newChatInitiated", handleNewChatInitiated);
     sockets.on("newPrivateChatInitiated", handleNewPrivateChatInitiated);
@@ -250,13 +240,10 @@ const Chat = () => {
       sockets.off("userDeclinedCall", userDeclinedCall);
     };
   }, []);
+
   const audioCallAccepted = () => {
     // sockets.emit("call:accepted", callPayload);
   };
-
-  useEffect(() => {
-    console.log(selectedGroupMemberPayload);
-  }, [selectedGroupMemberPayload]);
 
   const audioCallDeclined = () => {
     setShowIncomingCall(false);
@@ -292,7 +279,10 @@ const Chat = () => {
           setShowLoadingInterface(false);
           if (!sockets.connected) sockets.connect();
 
+          // console.log(response.data.response);
+
           const updatedChats = response.data.response.map((chats: any) => {
+            // console.log(chats);
             if (chats.encryptedAESKeys) {
               const encryptedAESKeys = chats.encryptedAESKeys;
 
@@ -305,13 +295,20 @@ const Chat = () => {
                 )
               );
 
+              AESChatKey.storeKeyLocally(
+                chats.chatId,
+                decodedAESKeyMap[emailAddress]
+              );
+
               return {
                 ...chats,
                 encryptedAESKeys: decodedAESKeyMap,
               };
             }
+
             return chats;
           });
+
           setChatList(updatedChats);
         } else {
           setShowLoadingInterface(false);
@@ -339,6 +336,8 @@ const Chat = () => {
   }, []);
 
   const wholeElementClicked = async (e: React.MouseEvent<HTMLElement>) => {
+    setIsMobileSidebarOpen(false);
+
     if (viewImageContainer) {
       setDiscardMyMedia(true);
       return;
@@ -362,6 +361,7 @@ const Chat = () => {
 
     if (matchedChat.type === "group") {
       const encryptedAESKEY = matchedChat.encryptedAESKeys[emailAddress];
+
       if (encryptedAESKEY) {
         const { rsaPrivateKey } = AuthStore.getState();
         try {
@@ -449,13 +449,26 @@ const Chat = () => {
     display: showCreateGroupIntf ? "flex" : "none", //its kinda
   };
 
+  const onOpenMobileSidebar = () => {
+    // alert("clicked");
+    setIsMobileSidebarOpen(true);
+  };
+
+  const onCloseMobile = () => {
+    setIsMobileSidebarOpen(false);
+  };
   return (
     <>
+      {/* <CreateContactModal /> */}
+
+      {openCreateGroupModal ? <Create_Group_Interface /> : null}
       {userIsExitingTheGroup ? <UserExitGroup /> : null}
       {userIsChangingGroupName ? <EditGroupName /> : null}
+      {openCreateGroupModal ? <CreateGroupModal /> : null}
       {/* Discard Media rendered but didnt implement any logic  */}
       {DiscardMyMedia ? <DiscardMedia /> : null}
-      {showLoadingInterface ? <Loading /> : null}
+      {/* usually the below is responsible for loading */}
+      {/* {showLoadingInterface ? <Loading /> : null} */}
       {showOutgoingCall ? <OutgoingCallModal /> : null}
       {showIncomingCall ? (
         <IncomingCallModal
@@ -474,8 +487,7 @@ const Chat = () => {
             className="Create_Group_Interface_ChatJs_Container chatInterfAddFriends"
             style={Create_Group_Interface_Container_ChatJs_Style}
           >
-            {showCreateGroupIntf ? <Create_Group_Interface /> : null}
-            {/* {addMoreFriendsInGroup ? <Create_Group_Interface /> : null} */}
+            <Create_Group_Interface />
           </div>
 
           <div
@@ -483,130 +495,88 @@ const Chat = () => {
             style={chatMainContainerStyle}
             data-testid="chatMainContainer"
           >
-            {/* // style={chatMainContainerStyle} */}
-            {/* <div //for including the strip behind to sidebar
-              style={{
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <PanelRightCloseIcon />
-            </div> */}
-
             <div
-              id="sidebar"
-              className={
-                chatList
-                  ? showRightSideMobile
-                    ? "left_side_User leftSideMobileUser"
-                    : "left_side_User"
-                  : isChecked
-                  ? "left_side leftSideMobile"
-                  : "left_side"
-              }
-              onClick={(e) => {
-                setShowDarkAndLightModeDropDown(false);
-
-                if (viewImageContainer) {
-                  setDiscardMyMedia(true);
-                  return;
-                }
-              }}
-              style={left_side_Style}
+              className={`
+      ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"} 
+      md:translate-x-0
+      fixed md:relative
+      // w-full sm:w-[360px] md:w-[370px]
+      top-0 left-0
+      z-50 md:z-auto
+      h-full
+      border-r border-black/20 dark:border-slate-700/50
+      bg-white/95 dark:bg-slate-800/95 md:bg-white/70 md:dark:bg-slate-800/70
+      backdrop-blur-xl
+      flex flex-col
+      transition-transform duration-300 ease-in-out
+    `}
             >
-              <header style={left_side_Header_Style} className="sidebarHeader">
-                {/* <header style={left_side_Header_Style} className="sidebarHeader"> */}
-                {/* <div className="create_Group"> */}
-                <>
-                  <h4 style={{ color: fontColor }}>Chats</h4>
-                </>
-                <div style={{ width: "1.4rem" }}>
-                  <PopupMenu />
-                </div>
-                {/* </div> */}
-              </header>
-
-              {/* <div style={{ width: "inherit" }}> */}
               <div>
                 {chatList && chatList.length > 0 ? (
-                  chatList.map((chats, index) => {
-                    return (
-                      <React.Fragment key={chats._id || index}>
-                        <User
-                          chatId={chats.chatId}
-                          showWholeElementCursor={true}
-                          wholeElementClicked={wholeElementClicked}
-                          groupName={
-                            chats.type === "group"
-                              ? chats.groupNames
-                              : chats.chatInitiatedFrom.email === emailAddress
-                              ? chats.chatName
-                              : chats.chatInitiatedFrom.userName
-                          }
-
-                          //we need to be careful about
-
-                          // lastMessage={
-                          //   chats.chatId === selectedChat?.chatId &&
-                          //   lastMessageInfo?.chatId === chats.chatId
-                          //     ? lastMessageInfo
-                          //     : "Just Sent Now"
-                          // }
-                          // lastMessage={
-                          //   chats.chatId === selectedChat?.chatId &&
-                          //   lastMessageInfo?.chatId === chats.chatId
-                          //     ? getFriendlyTimeLabel(lastMessageInfo.timestamp)
-                          //     : chats.lastMessage?.timestamp
-                          //     ? getFriendlyTimeLabel(
-                          //         chats.lastMessage.timestamp
-                          //       )
-                          //     : null
-                          // }
-                          // lastMessage={
-                          //   chats.chatId === selectedChat?.chatId &&
-                          //   lastMessageInfo?.chatId === chats.chatId
-                          //     ? lastMessageInfo.message.length > 20
-                          //       ? `${lastMessageInfo.message.substring(
-                          //           0,
-                          //           20
-                          //         )}...`
-                          //       : lastMessageInfo.message
-                          //     : chats.lastMessage?.message
-                          //     ? chats.lastMessage.message.length > 20
-                          //       ? `${chats.lastMessage.message.substring(
-                          //           0,
-                          //           20
-                          //         )}...`
-                          //       : chats.lastMessage.message
-                          //     : "Start conversation now"
-                          // }
-                          // lastMessageSentBy={
-                          //   lastMessageInfo?.userName
-                          //     ? lastMessageInfo.userName
-                          //     : chats?.lastMessage?.userName
-                          //     ? chats.lastMessage.userName
-                          //     : "Unknown Sender"
-                          // }
-                          // time={"hello"} //in leftside its the right side wall of the chat box
-                          // time={
-                          //   lastMessageInfo ? lastMessageInfo.timestamp : null
-                          // }
-                        />
-                      </React.Fragment>
-                    );
-                  })
+                  // the chat sidebar with actual chat list
+                  <ChatSidebar
+                    wholeElementClicked={wholeElementClicked}
+                    isMobileSidebarOpen={isMobileSidebarOpen}
+                    onCloseMobile={onCloseMobile}
+                  />
                 ) : (
-                  <LeftSideEmpty />
+                  // <LeftSideEmpty />
+                  <div className="flex h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 overflow-hidden">
+                    <div className=" border-r">
+                      {/* // the chat sidebar with no chat list */}
+
+                      <EmptyState
+                        type="sidebar"
+                        isMobileSidebarOpen={isMobileSidebarOpen}
+                        onCloseMobile={onCloseMobile}
+                      />
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
-            {chatList && chatList.length > 0 ? (
-              <>
-                <RightSideChat />
-              </>
-            ) : (
-              <RightSideEmpty />
-            )}
+
+            <div
+              className={`
+      flex-1
+      h-full
+            w-full sm:w-[360px] md:w-[1000px]
+
+      ml-0 md:ml-[0px]
+      flex flex-col
+      transition-all duration-300 ease-in-out
+      bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100
+      dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900
+      overflow-hidden
+    `}
+            >
+              {selectedChat ? (
+                <>
+                  {/* <RightSideChat /> */}
+                  {showLoadingInterface ? (
+                    <div className="w-full flex-1 flex flex-col h-full bg-gradient-to-br from-slate-50/50 via-white/30 to-blue-50/50 dark:from-slate-900/50 dark:via-slate-800/30 dark:to-indigo-900/50">
+                      {/* the loading for fetching messages */}
+                      <ChatLoadingState />
+                    </div>
+                  ) : (
+                    <div className="flex h-screen   bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 overflow-hidden">
+                      <ChatArea onOpenMobileSidebar={onOpenMobileSidebar} />
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex h-screen   bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 overflow-hidden">
+                  {/* <div className="flex w-screen h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 overflow-hidden"> */}
+                  <div className="flex-1">
+                    <EmptyState
+                      type="main"
+                      onOpenMobileSidebar={onOpenMobileSidebar}
+                    />
+                  </div>
+                </div>
+                // <RightSideEmpty />
+              )}
+            </div>
           </div>
         </>
       )}

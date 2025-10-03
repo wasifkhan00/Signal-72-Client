@@ -326,10 +326,10 @@
   .right_side {
     display: none; /* will be conditionally toggled via state */
   }
-  #sidebar {
-    max-width: 100vw;
+  /* #sidebar {
+    max-width: 100vw; ===> commented 
     width: 100vw;
-  }
+  } */
 
   .showRightSideMobile {
     display: flex !important;

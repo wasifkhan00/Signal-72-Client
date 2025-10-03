@@ -78,6 +78,12 @@ interface ChatStore {
   groupName: string;
   setGroupName: (val: string) => void;
 
+  userSelectedImage: string;
+  setUserSelectedImage: (val: string) => void;
+
+  imagePreviewBeforeSending: boolean;
+  setImagePreviewBeforeSending: (val: boolean) => void;
+
   groupMembers: GroupMember[];
   setGroupMembers: (val: any[]) => void;
 
@@ -89,6 +95,15 @@ interface ChatStore {
 
   showCreateGroupIntf: boolean;
   setShowCreateGroupIntf: (val: boolean) => void;
+
+  isSearching: boolean;
+  setIsSearching: (val: boolean) => void;
+
+  openCreateContactModal: boolean;
+  setOpenCreateContactModal: (val: boolean) => void;
+
+  openCreateGroupModal: boolean;
+  setOpenCreateGroupModal: (val: boolean) => void;
 
   lastMessageInfo: Record<string, any>;
   setLastMessageInfo: (val: Record<string, any>) => void;
@@ -157,6 +172,13 @@ const useChatStore = create<ChatStore>((set) => ({
   groupName: "",
   setGroupName: (val) => set({ groupName: val }),
 
+  userSelectedImage: "",
+  setUserSelectedImage: (val) => set({ userSelectedImage: val }),
+
+  imagePreviewBeforeSending: false,
+  setImagePreviewBeforeSending: (val) =>
+    set({ imagePreviewBeforeSending: val }),
+
   groupMembers: [],
   setGroupMembers: (val) => set({ groupMembers: val }),
 
@@ -168,6 +190,15 @@ const useChatStore = create<ChatStore>((set) => ({
 
   showCreateGroupIntf: false,
   setShowCreateGroupIntf: (val) => set({ showCreateGroupIntf: val }),
+
+  isSearching: false,
+  setIsSearching: (val) => set({ isSearching: val }),
+
+  openCreateContactModal: false,
+  setOpenCreateContactModal: (val) => set({ openCreateContactModal: val }),
+
+  openCreateGroupModal: false,
+  setOpenCreateGroupModal: (val) => set({ openCreateGroupModal: val }),
 
   showIncomingCall: false,
   setShowIncomingCall: (val) => set({ showIncomingCall: val }),

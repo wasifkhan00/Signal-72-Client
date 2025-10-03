@@ -23,7 +23,7 @@ export const AESChatKey = {
 
   // 1️⃣ Generate AES-256 key and store it for this private chat
   async generateKeyForChat(chatId: string, userRsaPublicKey: string) {
-    console.log("im being generated AES KEY");
+    // console.log("im being generated AES KEY");
     // 1. Generate AES key
     const aesChatKey = await crypto.subtle.generateKey(
       { name: "AES-GCM", length: 256 },
@@ -78,8 +78,8 @@ export const AESChatKey = {
       [encodeEmail(selectedGroupMemberPayload[0].email)]: encryptedForThem,
     };
 
-    console.log(aesChatKey);
-    console.log(encryptedAESKeyObject);
+    // console.log(aesChatKey);
+    // console.log(encryptedAESKeyObject);
 
     await this.storeKeyLocally(chatId, encryptedForMe);
 
@@ -106,6 +106,7 @@ export const AESChatKey = {
 
     // // 3. Get your own public key
     const { rsaPublicKey, emailAddress } = AuthStore.getState();
+
     if (!rsaPublicKey) throw new Error("❌ Your RSA Public Key is missing");
 
     const myRSAPublicKeyCryptoKey = await this.importRSAPublicKey(rsaPublicKey);
@@ -123,7 +124,10 @@ export const AESChatKey = {
     // // 5. Encrypt AES key for each group member
     const encryptedAESKeyObject: Record<string, string> = {};
 
-    const encodeEmail = (email: string) => btoa(email);
+    // const encodeEmail = (email: string) => btoa(email);
+    function encodeEmail(rawEmail) {
+      return Buffer.from(rawEmail).toString("base64");
+    }
 
     // // Include yourself
     encryptedAESKeyObject[encodeEmail(emailAddress)] = encryptedForMe;
@@ -151,7 +155,7 @@ export const AESChatKey = {
     // 6. Store your encrypted version locally
     await this.storeKeyLocally(chatId, encryptedForMe);
 
-    console.log("🟢 Group AES Key Generated:", encryptedAESKeyObject);
+    // console.log("🟢 Group AES Key Generated:", encryptedAESKeyObject);
 
     return { aesChatKey, encryptedAESKeyObject };
   },
@@ -167,7 +171,7 @@ export const AESChatKey = {
     const encryptedBytes = Uint8Array.from(atob(encryptedAESKeyBase64), (c) =>
       c.charCodeAt(0)
     );
-    console.log("breakpoint 1");
+    // console.log("breakpoint 1");
 
     const decoded = atob(encryptedAESKeyBase64);
     // console.log("Length of decoded AES key:", decoded.length);
@@ -176,10 +180,10 @@ export const AESChatKey = {
     let usablePrivateKey: CryptoKey;
 
     if (rsaPrivateKey instanceof CryptoKey) {
-      console.log("converted cryptokey");
+      // console.log("converted cryptokey");
       usablePrivateKey = rsaPrivateKey;
     } else if (rsaPrivateKey instanceof ArrayBuffer) {
-      console.log("converting to cryptokey");
+      // console.log("converting to cryptokey");
 
       usablePrivateKey = await crypto.subtle.importKey(
         "pkcs8",
@@ -191,13 +195,13 @@ export const AESChatKey = {
         true,
         ["decrypt"]
       );
-      console.log("converting to cryptokey 2");
+      // console.log("converting to cryptokey 2");
     } else {
       throw new Error(
         "Invalid RSA private key type: must be CryptoKey or ArrayBuffer."
       );
     }
-    console.log("decrypting boy");
+    // console.log("decrypting boy");
 
     // Step 3: Decrypt the AES key with RSA-OAEP
     try {
@@ -218,7 +222,7 @@ export const AESChatKey = {
         ["encrypt", "decrypt"]
       );
 
-      console.log("✅ AES Key Decryption Successful");
+      // console.log("✅ AES Key Decryption Successful");
       return aesCryptoKey;
     } catch (e) {
       console.error("❌ AES Key Decryption failed:", e);
@@ -241,7 +245,7 @@ export const AESChatKey = {
       await localforage.setItem(storageKey, {
         encryptedKey: encryptedAESKeyBase64,
       });
-      console.log("✅ Key stored successfully");
+      // console.log("✅ Key stored successfully");
     } catch (err) {
       console.error("❌ Error storing key:", err);
     }
@@ -301,7 +305,7 @@ export const AESChatKey = {
         privateKey,
         encryptedKeyBuffer
       );
-      console.log("✅ AES key decrypted successfully.");
+      // console.log("✅ AES key decrypted successfully.");
     } catch (err) {
       console.error("❌ Error decrypting AES key:", err);
       return null;
@@ -316,7 +320,7 @@ export const AESChatKey = {
         ["encrypt", "decrypt"]
       );
 
-      console.log("🔑 AES key imported successfully.");
+      // console.log("🔑 AES key imported successfully.");
       return aesKey;
     } catch (err) {
       console.error("❌ Failed to import decrypted AES key:", err);

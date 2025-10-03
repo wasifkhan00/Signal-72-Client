@@ -1,6 +1,3 @@
-// import darkBackgroundImage from "";
-// // import darkBackgroundImage from "@/assets/dark-bg.jpg";
-// import whiteBackgroundImage from "@/assets/light-bg.jpg";
 import useAppStore from "@store/AppStore";
 import useChatStore from "@store/ChatStore";
 ("@store/ChatStore");
@@ -43,16 +40,4 @@ export const chatMainContainerStyle: React.CSSProperties = {
     userIsChangingGroupName
       ? "blur(2px)"
       : "none",
-};
-
-export const left_side_Style = {
-  background: dark
-    ? "linear-gradient(145deg, #1a1a1a, #2c2c2c)"
-    : "linear-gradient(145deg, #f4f4f4, #e8e8e8)",
-};
-
-export const left_side_Header_Style = {
-  background: dark
-    ? "linear-gradient(145deg, #1a1a1a, #2c2c2c)"
-    : "linear-gradient(145deg, #f4f4f4, #e8e8e8)",
 };

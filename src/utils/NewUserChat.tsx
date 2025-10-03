@@ -15,7 +15,7 @@ const NewUserChat = () => {
     <div style={new_User_Joined_Message_Style}>
       <div className="user_Joined NewUser" style={{ color: "#ba8229" }}>
         {selectedChat?.type === "group"
-          ? "Messages are End to End-Ecncrypted - Not even Snaptext can see your messages"
+          ? "Messages are End to End-Ecncrypted - Not even Signal-72 can see your messages"
           : "Messages are End to End-Ecncrypted"}
       </div>
     </div>

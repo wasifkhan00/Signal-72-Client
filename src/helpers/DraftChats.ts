@@ -28,6 +28,7 @@ export function saveDraftChat(newDraft: any) {
 }
 
 export function removeDraftChat(chatId: any) {
+  console.log("Here is the chatId to remove:", chatId);
   const data = localStorage.getItem("draftChats");
   if (!data) return;
 

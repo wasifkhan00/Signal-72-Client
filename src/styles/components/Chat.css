@@ -15,12 +15,16 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  width: 28vw;
-  min-width: 260px;
-  max-width: 360px;
+  width: 30vw;
+  /* min-width: 260px; */
+  /* max-width: 360px; */
   /* border-right: 1px solid #ccc; */
   overflow: hidden;
   z-index: 2;
+}
+
+#rightSideEmpty {
+  width: 70vw;
 }
 .left_side::-webkit-scrollbar,
 .left_side_User::-webkit-scrollbar {

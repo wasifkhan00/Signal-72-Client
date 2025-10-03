@@ -27,7 +27,13 @@ interface EndpointsType {
   };
 }
 
-const API_BASE_URL = "http://localhost:3008";
+const API_BASE_URL =
+  "https://signal-72-backend-867721534855.us-central1.run.app";
+// const API_BASE_URL = "http://localhost:3008";
+
+// const API_BASE_URL =
+//   "https://efficiency-did-happening-parking.trycloudflare.com";
+// const API_BASE_URL = " https://dream-popular-truth-investing.trycloudflare.com";
 // const API_BASE_URL = "http://localhost:3008";
 // const API_BASE_URL = "https://had-reduce-cork-blogs.trycloudflare.com";
 // const API_BASE_URL = "https://syria-ddr-ps-favor.trycloudflare.com";

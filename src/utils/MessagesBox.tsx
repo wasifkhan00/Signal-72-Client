@@ -26,6 +26,7 @@ const MessagesBox: React.FC<MessagesBoxProps> = ({
     hour12: true,
   });
 
+  console.log("Rendering message:", { messages });
   const today = new Date();
   const yesterday = new Date();
   yesterday.setDate(today.getDate() - 1);

@@ -8,6 +8,7 @@ import { table } from "console";
 import { AESChatKey } from "../encryption/GenerateAES";
 import useChatModulesStore from "@store/ChatModulesStore";
 import { saveDraftChat } from "../helpers/DraftChats";
+import { toast } from "sonner";
 
 export const checkIfUserAlreadyCreatedGroup = async () => {
   try {
@@ -36,6 +37,7 @@ export const checkIfUserAlreadyCreatedGroup = async () => {
 
 export const findUserByEmail = async () => {
   const store = useCreateGroupStore.getState();
+  const chatStore = useChatStore.getState();
   const input = store.groupMembersInputValue.trim();
 
   try {
@@ -62,9 +64,13 @@ export const findUserByEmail = async () => {
 
       store.setShowResponsesFromApi(true);
       store.setWarningMsg("");
+
       store.setGroupMembersResponse(filteredUsers);
       //   return filteredUsers;
     } else {
+      toast.error("User Not Found");
+      store.setGroupMembersResponse([]);
+      chatStore.setIsSearching(false);
       store.setWarningMsg("User not found");
       store.setShowResponsesFromApi(false);
     }
@@ -180,6 +186,7 @@ export const handleCreateGroup = async ({ groupNameInput }: any) => {
     setShowCreateGroupIntf,
     setSelectedGroupMemberPayload,
     chatIdGenerator,
+    setOpenCreateGroupModal,
   } = useChatStore.getState();
 
   const { setAddedInTheGroupBy } = useChatModulesStore.getState();
@@ -213,7 +220,7 @@ export const handleCreateGroup = async ({ groupNameInput }: any) => {
       ...adminPayload,
     ]);
   }
-
+  // return null;
   const groupChatId = chatIdGenerator({ emailAddress: emailAddress });
 
   const encryptedAESKey = await AESChatKey.generateKeyForGroupChat(
@@ -238,6 +245,13 @@ export const handleCreateGroup = async ({ groupNameInput }: any) => {
       .then((response) => {
         const { success, message } = response.data;
         if (success) {
+          toast.success(
+            `Group "${groupPayload.groupNames}" created with ${updatedMembers.length} members! 🎉`
+          );
+
+          setOpenCreateGroupModal(false);
+
+          console.log(groupPayload);
           setChatList((prevChatList) => [...prevChatList, groupPayload]);
           // setAddedInTheGroupBy(groupPayload.createdBy); //SHOULD BE BROADCASTED AND SENT VIA EMIT
           setShowCreateGroupIntf(false);
@@ -256,6 +270,7 @@ export const handleCreateGroup = async ({ groupNameInput }: any) => {
     setGroupMembersInputValue("");
   } else {
     setWarningMsg("Fields cannot be blank");
+    toast.error("Fields cannot be blank");
     setTimeout(() => {
       setWarningMsg("");
     }, 3000);
@@ -274,6 +289,7 @@ export const handleCreateContact = async ({ groupNameInput }: any) => {
     selectedGroupMemberPayload,
     chatIdGenerator,
     isModePrivateChat,
+    setOpenCreateContactModal,
   } = useChatStore.getState();
 
   const { setWarningMsg, setGroupMembersInputValue } =
@@ -342,32 +358,15 @@ export const handleCreateContact = async ({ groupNameInput }: any) => {
 
     if (saveChatToDraft === "chat_already_exists") {
       setWarningMsg("Chat Already Initiated");
+      toast.error("Chat Already Initiated");
       return;
     } else {
+      setOpenCreateContactModal(false);
       setChatList((prevChatList) => [...prevChatList, privateChatPayload]);
       setShowCreateGroupIntf(false);
     }
-
-    //refrain from storing private chat initaition directly instead store it in drafts instead of sending to db just only on initiations
-    // axios
-    //   .post(Endpoints.userInitiatePrivateChat, privateChatPayload, {
-    //     headers: Endpoints.getHeaders(),
-    //   })
-    //   .then((response) => {
-    //     const { success, message } = response.data;
-    //     if (success) {
-    //       setChatList((prevChatList) => [...prevChatList, privateChatPayload]);
-    //       setShowCreateGroupIntf(false);
-    //       setSelectedGroupMemberPayload([]);
-    //       sockets.emit("chatInitated", privateChatPayload.chatId);
-    //     } else {
-    //       setWarningMsg(message);
-    //     }
-    //   })
-    //   .catch((err) => setWarningMsg(err.message));
-    // setWarningMsg("");
-    // setGroupMembersInputValue("");
   } else {
+    toast.error("Fields cannot be blank");
     setWarningMsg("Fields cannot be blank");
 
     setTimeout(() => {

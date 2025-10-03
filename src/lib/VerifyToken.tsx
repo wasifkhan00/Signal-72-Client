@@ -3,6 +3,7 @@
 import axios from "axios";
 import Endpoints from "../endpoint/endpoints"; // adjust
 import localforage from "localforage";
+import { toast } from "sonner";
 
 export const verifyToken = async ({
   savedToken,
@@ -59,6 +60,7 @@ export const verifyToken = async ({
     }
 
     if (emails === savedEmail && names === savedNames) {
+      toast.success("Successfully Logged In");
       setSuccessMessage(true);
       setUsersName(names);
       setEmailAddress(emails);
@@ -75,7 +77,7 @@ export const verifyToken = async ({
       console.warn("LocalStorage mismatch detected 🚨");
     }
   } catch (err) {
-    alert("Token Verification Failed: Try Logging in manually");
+    toast.error("Authentication failed. Please log in manually to continue.");
 
     localStorage.removeItem("token");
     localStorage.removeItem("names");
